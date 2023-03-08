@@ -1,0 +1,25 @@
+Greedy:
+
+Select random starting leaf in T, find leaf in T'. Add leaf to first component of agreement forest F.
+
+Iterate:
+    1. Find random leaf v in T, find same leaf in T'.
+    2. Check for each component in F if v can be added while maintaining that all components are disjoint. If the size of the component is bigger than 3 topology needs to be checked for equality too.
+    3. If this is not the case add another component to F containing only v
+
+Optimizations possible using topology:
+    - Cherries only have to check one component in F if one of the leaves is already in a component
+
+Pretty sure topology check should be doable in linear time.
+Supression of degree 2 vertices should be doable in one tree search pass.
+
+
+Branching algorithm:
+-common cherry reduction
+    - can detect cherries with one tree search pass: cherry is internal node with two leafs. If this is found find the parent of both leafs in other tree and check if they are the same. Should be really fast with correct data structure. (See DSN)
+
+
+
+Data structure notes (DSN):
+-Needs fast access to leafs using label.
+-Needs a distiction from leafs and internal nodes 

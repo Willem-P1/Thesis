@@ -1,0 +1,10 @@
+@article{article,
+author = {Whidden, Chris and Beiko, Robert and Zeh, Norbert},
+year = {2013},
+month = {07},
+pages = {1431-1466},
+title = {Fixed-Parameter Algorithms for Maximum Agreement Forests},
+volume = {42},
+journal = {SIAM Journal on Computing},
+doi = {10.1137/110845045}
+}
