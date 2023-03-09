@@ -1,0 +1,7 @@
+1) x,y in same component of F'
+    - delete x, TBR++
+    - delete y, TBR++
+    - randomly select adjecent edge from path connecting x and y, delete all other adjacent edges,
+     TBR += #edges deleted. And tidy up tree to stay as phylogenetic tree.
+2) x,y in different components of F'
+    either delete x from T and F' or y, TBR++. Guess is totally random

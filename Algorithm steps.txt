@@ -23,3 +23,6 @@ Branching algorithm:
 Data structure notes (DSN):
 -Needs fast access to leafs using label.
 -Needs a distiction from leafs and internal nodes 
+
+
+soms richting einde exact algoritme runnen.
