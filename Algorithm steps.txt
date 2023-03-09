@@ -25,4 +25,6 @@ Data structure notes (DSN):
 -Needs a distiction from leafs and internal nodes 
 
 
-soms richting einde exact algoritme runnen.
+soms richting einde exact algoritme runnen. om betere resultaten te krijgen
+
+I have to write a parser fuck yeeees
