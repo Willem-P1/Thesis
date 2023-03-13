@@ -8,29 +8,34 @@ public class Parser {
     private Lexer l;
     private Token token;
     private Token tokenPeek;
+    private Tree currTree;
     public Parser(String file)
     {
         l = new Lexer(file);
 
     }
 
-    public void parse()
+    public Tree[] parse()
     {
-        
+        return tree();
     }
 
     private Tree[] tree()
     {
-        Tree tree1 = subtree();
+        Tree tree1 = new Tree();
+        Tree tree2 = new Tree();
+        currTree = tree1;
+        subtree();
         match(TokenType.Semicolon);
         match(TokenType.newLine);
-        Tree tree2 = subtree();
+        currTree = tree2;
+        subtree();
         match(TokenType.Semicolon);
         match(TokenType.EOI);
         return new Tree[]{tree1, tree2};
     }
 
-    private Tree subtree()
+    private void subtree()
     {
         if(peek().type == TokenType.ParentisiesL){
             internal();            
@@ -38,7 +43,6 @@ public class Parser {
         {
             leaf();
         }
-        return null;
     }
 
     private void leaf()
