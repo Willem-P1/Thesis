@@ -58,7 +58,7 @@ public class Lexer
             }
             else
             {
-                System.out.println("End of file!!");
+                // System.out.println("End of file!!");
                 eof = true;
                 c = '\n';
             }
@@ -105,7 +105,7 @@ public class Lexer
         {
             token = label();
         }
-        
+        // System.out.print(token.lexeme);
         return token;
     }
 
