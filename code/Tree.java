@@ -3,27 +3,8 @@ package code;
 import java.util.*;
 
 public class Tree {
-    /*public class Edge
-    {
-        int v;
-        boolean enabled;
-        public Edge(int vertex)
-        {
-            v = vertex;
-            enabled = true;
-        }
-
-        public int getVertex()
-        {
-            return v;
-        }
-
-        public boolean isEnabled() {
-            return enabled;
-        }
-    }*/
     
-    Map<Integer, List<Integer>> nodes;
+    Map<Integer, List<Edge>> nodes;
 
     public Tree()
     {
@@ -38,17 +19,18 @@ public class Tree {
 
     public void removeNode(int label)
     {
-        List<Integer> edges = nodes.remove(label);
-        for(int e : edges)
+        List<Edge> edges = nodes.remove(label);
+        Edge temp = new Edge(label);//used for removing edges from lists
+        for(Edge e : edges)
         {
-            nodes.get(e).remove((Integer)label);
+            nodes.get(e.getVertex()).remove(temp);
         }
     }
 
     public void addEdge(int from, int to)
     {
-        nodes.get(from).add(to);
-        nodes.get(to).add(from);
+        nodes.get(from).add(new Edge(to));
+        nodes.get(to).add(new Edge(from));
     }
 
     @Override
@@ -56,7 +38,7 @@ public class Tree {
         String output = "";
         for(int key : nodes.keySet())
         {
-            for(int e : nodes.get(key))
+            for(Edge e : nodes.get(key))
             {
                 output += key + " - " + e + "\n";
             }

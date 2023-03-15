@@ -3,12 +3,14 @@ import code.Lexer.Token;
 import code.Lexer.TokenType;
 
 public class Parser {
+    
     private Lexer l;
     private Token token;
     private Token tokenPeek;
     private Tree currTree;
     private int currNode;//current internal node
     private int nodeGenerator;
+
     public Parser(String file)
     {
         l = new Lexer(file);
