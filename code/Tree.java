@@ -4,7 +4,7 @@ import java.util.*;
 
 public class Tree {
     
-    Map<Integer, List<Edge>> nodes;
+    private Map<Integer, List<Edge>> nodes;
 
     public Tree()
     {

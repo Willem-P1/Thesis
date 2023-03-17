@@ -12,10 +12,10 @@ public class TreeOperations {
     {
         List<Integer> toRemove = new ArrayList<>();
         
-        for(int v : tree.nodes.keySet())
+        for(int v : tree.getTree().keySet())
         {
             if(v > 0){continue;}//leaf nodes always have only one edge cannot become 2 if everything is done correctly
-            List<Edge> edges = tree.nodes.get(v);
+            List<Edge> edges = tree.getTree().get(v);
             if(edges.size() == 2){
                 toRemove.add(v);
             }
@@ -25,6 +25,27 @@ public class TreeOperations {
         {
             supressDeg2Vertex(tree, v);
         }
+    }
+
+    public int[] findCherry(Tree tree)
+    {
+        for(int v : tree.getTree().keySet())
+        {
+            if(v > 0){continue;}
+            List<Edge> edges = tree.getTree().get(v);
+            int[] leaves = new int[3];//just use 3 in case of a fuckup, prevents errors when |X| = 3
+            int leafCount = 0;
+            for(Edge e : edges)
+            {
+                if(e.getVertex() > 0){leaves[leafCount++] = e.getVertex();}
+            }
+
+            if(leafCount >= 2)
+            {
+                return new int[]{leaves[0],leaves[1]};//cherry found
+            }
+        }
+        return null;//if no cherry was found
     }
     
     //function is useful if you know which vertex needs to be supressed
@@ -44,18 +65,18 @@ public class TreeOperations {
     public void commonCherryReduction(Tree tree, Tree other)
     {
         List<Integer> toRemove = new ArrayList<>();
-        for(int v : tree.nodes.keySet())
+        for(int v : tree.getTree().keySet())
         {
             if(v > 0){continue;}//only check internal nodes
-            List<Edge> edges = tree.nodes.get(v);
-            int[] leaves = new int[3];//just use 3 in case of a fuckup, prevents errors
+            List<Edge> edges = tree.getTree().get(v);
+            int[] leaves = new int[3];//just use 3 in case of a fuckup, prevents errors when |X| = 3
             int leafCount = 0;
             for(Edge e : edges)
             {
                 if(e.getVertex() > 0){leaves[leafCount++] = e.getVertex();}
             }
 
-            if(leafCount == 2)
+            if(leafCount >= 2)
             {
                 //check for cherry on other tree
                 List<Edge> otherEdges = other.getTree().get(leaves[0]);
