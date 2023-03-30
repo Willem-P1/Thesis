@@ -16,6 +16,11 @@ public class Tree {
         return nodes;
     }
 
+    public List<Edge> getNode(int label)
+    {
+        return nodes.get(label);
+    }
+
     public void addNode(int label)
     {
         //add new node to the list

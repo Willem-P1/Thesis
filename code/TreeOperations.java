@@ -25,6 +25,8 @@ public class TreeOperations {
         {
             supressDeg2Vertex(tree, v);
         }
+        //remove this to remove looping
+        if(!toRemove.isEmpty()){supressDeg2Vertex(tree);}
     }
 
     public int[] findCherry(Tree tree)
@@ -92,11 +94,129 @@ public class TreeOperations {
 
             }
         }
-
         for(int v : toRemove)
         {
             tree.removeNode(v);
             other.removeNode(v);
         }
+        //remove this to remove looping reduction
+        if(!toRemove.isEmpty()){commonCherryReduction(tree, other);}
+    }
+
+    public boolean MAF(Tree tree, Tree forest, int[][] edgeRemoval, int k)
+    {
+        //check base case
+        if(k < 0){return false;}
+
+        //First remove the edges from previous recursive call
+        for(int i = 0; i < edgeRemoval.length; i++)
+        {
+            forest.removeEdge(edgeRemoval[i][0], edgeRemoval[i][1]);
+        }
+        k -= edgeRemoval.length;
+        
+        //how to i revert this idk bro its needed tho
+        //and we need to remove common cherries again
+        supressDeg2Vertex(forest);
+
+        //TODO: find cherry in tree
+        //then find path in forest
+        int a = -1;
+        int b = -1;
+        List<Integer> path = findPath(forest, a, b);
+        
+        if(path == null)//no path within forest
+        {
+            //find edges to cherry
+            List<Edge> edgesA = forest.getNode(a);
+            List<Edge> edgesB = forest.getNode(b);
+            //since a and b are leaves both lists should be of size 1
+            if(MAF(tree, forest,new int[][]{{a,edgesA.get(0).getVertex()}},k))
+                return true;
+
+            if(MAF(tree, forest,new int[][]{{a,edgesB.get(0).getVertex()}},k))
+                return true;
+        }
+        else
+        {
+            //get pendant nodes
+            //you know the nodes and the two connections so we just have to find the third unkown node to get the pendant node
+            List<int[]> pendant = new ArrayList<>();
+            for(int i = 0; i < path.size();i++)
+            {
+                int label = path.get(i);
+                if(label > 0){continue;}
+                int other = path.get(i - 1);
+                int other2 = path.get(i + 1);
+                
+                for(Edge e : forest.getNode(label))
+                {
+                    if(e.getVertex() == other || e.getVertex() == other2)
+                    {
+                        continue;
+                    }
+                    pendant.add(new int[]{label,e.getVertex()});
+                }
+            }
+            //recursive call
+            if(pendant.size() == 1)
+            {
+                if(MAF(tree, forest,new int[][]{pendant.get(0)},k))
+                    return true;
+            }else
+            {
+                List<Edge> edgesA = forest.getNode(a);
+                List<Edge> edgesB = forest.getNode(b);
+                //use cheap recursive call first 
+                if(MAF(tree, forest,new int[][]{{a,edgesA.get(0).getVertex()}},k))
+                    return true;
+
+                if(MAF(tree, forest,new int[][]{{a,edgesB.get(0).getVertex()}},k))
+                    return true;
+
+                if(MAF(tree, forest,(int[][])pendant.toArray(),k))
+                    return true;
+            }
+        }
+
+        //TODO: revert degree 2 vertex supression
+
+        //add back the edges we just removed from previous recursive call
+        for(int i = 0; i < edgeRemoval.length; i++)
+        {
+            forest.removeEdge(edgeRemoval[i][0], edgeRemoval[i][1]);
+        }
+        k -= edgeRemoval.length;
+
+        return false;
+    }
+
+    //find path from a to b
+    public List<Integer> findPath(Tree tree, int a, int b)
+    {
+        List<Integer> path = new ArrayList<>();
+        if(recursiveDFS(tree, -1, a, b, path))
+        {
+            return path;
+        }
+        return null;
+    }
+
+    private boolean recursiveDFS(Tree tree, int prev, int from, int to, List<Integer> currPath)
+    {
+        if(from == to){
+            currPath.add(from);
+            return true;
+        }
+        for(Edge e : tree.getNode(from))
+        {
+            if(e.getVertex() == prev){continue;}//skip previously visited node
+            if(recursiveDFS(tree, from, e.getVertex(), to, currPath))
+            {
+                currPath.add(from);
+                return true;
+            }
+        }
+        return false;
     }
 }

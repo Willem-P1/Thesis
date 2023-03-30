@@ -10,7 +10,7 @@ Iterate:
 Optimizations possible using topology:
     - Cherries only have to check one component in F if one of the leaves is already in a component
 
-Pretty sure topology check should be doable in linear time.
+Pretty sure topology check should be doable in linear time.(NOT TRUE MAH BOY, ploynomial at best if your lucky)
 Supression of degree 2 vertices should be doable in one tree search pass.
 
 
@@ -27,4 +27,10 @@ Data structure notes (DSN):
 
 soms richting einde exact algoritme runnen. om betere resultaten te krijgen
 
-I have to write a parser fuck yeeees
+Hash vooraf berekende problemen om de oplossing later te kunnen gebruiken,
+zelfde situatie niet meerdere keren opnieuw checken
+
+path algoritme
+
+x, y path met veel takken waard om eerst te checken wat t snelste richting beste oplossing gaat.
+
