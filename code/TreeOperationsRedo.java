@@ -34,13 +34,17 @@ public class TreeOperationsRedo {
         //if there is a node r in Rt that is a root in Fdot2 remove r from Rt and add to Rd
         
         //find sibling pair in T1
-
+        int a, b, v = -1;
+        List<Integer> path = null;
         //remove common cherries
-        int[] ab = findCherry(tree);
-        int a = ab[0];
-        int b = ab[1];
-        List<Integer> path = findPath(forest, a, b);
-
+        do{
+            int[] ab = findCherry(tree);
+            a = ab[0];
+            b = ab[1];
+            v = ab[2];
+            path = findPath(forest, a, b);
+        }while(!detectCommonCherry(tree, forest, a, b, v));
+        
         if(path == null)//no path within forest
         {
             //find edges to cherry
@@ -122,13 +126,39 @@ public class TreeOperationsRedo {
 
             if(leafCount >= 2)
             {
-                return new int[]{leaves[0],leaves[1]};
+                return new int[]{leaves[0],leaves[1],v};//the cherry
             }
         }
 
         return null;
     }
 
+    public boolean detectCommonCherry(Tree tree, Tree forest, int a, int b, int v)
+    {
+        List<Edge> otherEdges = forest.getNode(a);
+        Edge otherEdge = otherEdges.get(0);//get connected internal node
+        boolean isCommon = false;
+        for(Edge e : forest.getNode(otherEdge.getVertex()))
+        {
+            if(e.getVertex() == b)//cherry is a common cherry
+            {
+                isCommon = true;
+                break;
+            }
+        }
+
+        if(isCommon)//reduce the trees if common cherry is found
+        {
+            tree.removeNode(b);
+            forest.removeNode(b);
+            suppressDeg2Vertex(tree, otherEdge.getVertex());
+            suppressDeg2Vertex(forest, otherEdge.getVertex());
+            //TODO:save cherry reduction data so we can reverse it
+            return true;
+        }
+
+        return false;
+    }
     
     public List<Integer> findPath(Tree tree, int a, int b)
     {
