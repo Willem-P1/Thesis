@@ -29,39 +29,6 @@ public class TreeOperations {
         if(!toRemove.isEmpty()){supressDeg2Vertex(tree);}
     }
 
-    public int[] findCherry(Tree tree)
-    {
-        for(int v : tree.getTree().keySet())
-        {
-            if(v > 0){continue;}
-            List<Edge> edges = tree.getTree().get(v);
-            int[] leaves = new int[3];//just use 3 in case of a fuckup, prevents errors when |X| = 3
-            int leafCount = 0;
-            for(Edge e : edges)
-            {
-                if(e.getVertex() > 0){leaves[leafCount++] = e.getVertex();}
-            }
-
-            if(leafCount >= 2)
-            {
-                return new int[]{leaves[0],leaves[1]};//cherry found
-            }
-        }
-        return null;//if no cherry was found
-    }
-    
-    //function is useful if you know which vertex needs to be supressed
-    //can be used to skip checking all vertices
-    public void supressDeg2Vertex(Tree tree, int v)
-    {
-        List<Edge> edges = tree.removeNode(v);
-        
-        //edges list should be size 2, if not you messed up
-        Edge edge1 = edges.get(0);
-        Edge edge2 = edges.get(1);
-        tree.addEdge(edge1.getVertex(), edge2.getVertex());
-    }
-
     //this assumes a size of tree > 3
     //TODO: i do not like the size of this function
     public void commonCherryReduction(Tree tree, Tree other)
@@ -102,6 +69,41 @@ public class TreeOperations {
         //remove this to remove looping reduction
         if(!toRemove.isEmpty()){commonCherryReduction(tree, other);}
     }
+
+    public int[] findCherry(Tree tree)
+    {
+        for(int v : tree.getTree().keySet())
+        {
+            if(v > 0){continue;}
+            List<Edge> edges = tree.getTree().get(v);
+            int[] leaves = new int[3];//just use 3 in case of a fuckup, prevents errors when |X| = 3
+            int leafCount = 0;
+            for(Edge e : edges)
+            {
+                if(e.getVertex() > 0){leaves[leafCount++] = e.getVertex();}
+            }
+
+            if(leafCount >= 2)
+            {
+                return new int[]{leaves[0],leaves[1]};//cherry found
+            }
+        }
+        return null;//if no cherry was found
+    }
+    
+    //function is useful if you know which vertex needs to be supressed
+    //can be used to skip checking all vertices
+    public void supressDeg2Vertex(Tree tree, int v)
+    {
+        List<Edge> edges = tree.removeNode(v);
+        
+        //edges list should be size 2, if not you messed up
+        Edge edge1 = edges.get(0);
+        Edge edge2 = edges.get(1);
+        tree.addEdge(edge1.getVertex(), edge2.getVertex());
+    }
+
+
 
     public boolean MAF(Tree tree, Tree forest, int[][] edgeRemoval, int k)
     {
@@ -184,9 +186,9 @@ public class TreeOperations {
         //add back the edges we just removed from previous recursive call
         for(int i = 0; i < edgeRemoval.length; i++)
         {
-            forest.removeEdge(edgeRemoval[i][0], edgeRemoval[i][1]);
+            forest.addEdge(edgeRemoval[i][0], edgeRemoval[i][1]);
         }
-        k -= edgeRemoval.length;
+        k += edgeRemoval.length;//probably not neccecary due to pass by value
 
         return false;
     }
@@ -202,6 +204,7 @@ public class TreeOperations {
         return null;
     }
 
+    //dfs for finding the path to the other node
     private boolean recursiveDFS(Tree tree, int prev, int from, int to, List<Integer> currPath)
     {
         if(from == to){

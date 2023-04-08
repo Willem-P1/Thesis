@@ -3,7 +3,7 @@ package code;
 import java.util.*;
 
 public class Tree {
-    
+    int minNode = -1;//minimum value of internal nodes//not sure if neccecary
     private Map<Integer, List<Edge>> nodes;
 
     public Tree()
@@ -14,6 +14,10 @@ public class Tree {
     public Map<Integer, List<Edge>> getTree()
     {
         return nodes;
+    }
+
+    public void setMinNode(int minNode) {
+        this.minNode = minNode;
     }
 
     public List<Edge> getNode(int label)
@@ -43,6 +47,23 @@ public class Tree {
     {
         nodes.get(from).add(new Edge(to));
         nodes.get(to).add(new Edge(from));
+    }
+
+    public void bisectEdge(int from, int to)
+    {
+        int label = minNode--;//not sure if neccecary
+        removeEdge(from, to);
+        addNode(label);
+        addEdge(from, label);
+        addEdge(to, label);
+    }
+
+    public void bisectEdge(int from, int to, int label)
+    {
+        removeEdge(from, to);
+        addNode(label);
+        addEdge(from, label);
+        addEdge(to, label);
     }
 
     public void removeEdge(int from, int to)

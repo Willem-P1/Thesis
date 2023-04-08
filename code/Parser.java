@@ -36,6 +36,7 @@ public class Parser {
         match(TokenType.newLine);
         
         currTree.removeNode(-1);//remove added root node
+        currTree.setMinNode(nodeGenerator);
         //reset node numbers
         currNode = -1;
         nodeGenerator = -2;
@@ -48,6 +49,7 @@ public class Parser {
         match(TokenType.EOI);
 
         currTree.removeNode(-1);//remove added root node
+        currTree.setMinNode(nodeGenerator);
 
         return new Tree[]{tree1, tree2};
     }
