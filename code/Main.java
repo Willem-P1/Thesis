@@ -1,16 +1,37 @@
 package code;
 import java.util.*;
+import code.TreeOperationsRedo.Operation;
+
 public class Main {
     public static void main(String[] args) {
         // testPathFinding();
         Parser l = new Parser("code/test.txt");
         Tree[] trees  = l.parse();
-        TreeOperations to = new TreeOperations();
-
+        TreeOperationsRedo to = new TreeOperationsRedo();
+        
+        //Routine to test tree opreations
+        System.out.println("Suppression test");
         System.out.println(trees[0]);
-        trees[0].removeNode(-3);
-        System.out.println(to.findPath(trees[0], 16, 12));
-        System.out.println(to.findPath(trees[1], 16, 12));
+        // trees[0].printDeg();
+        to.suppressDeg2Vertex(trees[0], -2);
+        System.out.println(trees[0]);
+        System.out.println("Path test");
+        List<Integer> path = to.findPath(trees[0],48, 21);
+        System.out.println(path);
+        List<int[]> pendantNodes = to.getPendantNodes(trees[0], path);
+        for(int[] arr : pendantNodes)
+        {
+            System.out.print(arr[1] + " ");
+        }
+        System.out.print("\n");
+        int[] cherry = to.findCherry(trees[0]);
+        System.out.println(cherry[0] + ", " + cherry[1]);
+        
+        Operation op = to.removeCommonCherry(trees[0], trees[1], 50);
+        System.out.println(trees[0]);
+        op.revert();
+        System.out.println("after reversal");
+        System.out.println(trees[0]);
     }
 
     public static void testPathFinding()
