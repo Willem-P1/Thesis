@@ -111,42 +111,35 @@ public class TreeOperationsRedo {
         int b = ab[1];
         List<Integer> path = findPath(forest, a, b);
 
-        if(path == null)//no path within forest
-        {
-            //find edges to cherry
-            List<Edge> edgesA = forest.getNode(a);
-            List<Edge> edgesB = forest.getNode(b);
-            //since a and b are leaves both lists should be of size 1
-            if(MAF(tree, forest,new int[][]{{a,edgesA.get(0).getVertex()}},k))
-                return true;
+        //find edges to cherry
+        List<Edge> edgesA = forest.getNode(a);
+        List<Edge> edgesB = forest.getNode(b);
+        //since a and b are leaves both lists should be of size 1
+        if(MAF(tree, forest,new int[][]{{a,edgesA.get(0).getVertex()}},k))
+            return true;
 
-            if(MAF(tree, forest,new int[][]{{a,edgesB.get(0).getVertex()}},k))
-                return true;
-        }
-        else
+        if(MAF(tree, forest,new int[][]{{a,edgesB.get(0).getVertex()}},k))
+            return true;
+
+        if(path != null)//ther is a path within forest
         {
             //get pendant nodes
             //you know the nodes and the two connections so we just have to find the third unkown node to get the pendant node
             List<int[]> pendant = getPendantNodes(forest, path);
-            //recursive call
-            if(pendant.size() == 1)
-            {
-                if(MAF(tree, forest,new int[][]{pendant.get(0)},k))
-                    return true;
-            }else
-            {
-                List<Edge> edgesA = forest.getNode(a);
-                List<Edge> edgesB = forest.getNode(b);
-                //use cheap recursive call first 
-                if(MAF(tree, forest,new int[][]{{a,edgesA.get(0).getVertex()}},k))
-                    return true;
 
-                if(MAF(tree, forest,new int[][]{{a,edgesB.get(0).getVertex()}},k))
-                    return true;
-
-                if(MAF(tree, forest,(int[][])pendant.toArray(),k))
+            for(int i = 0; i < pendant.size();i++)
+            {
+                int[][] edges = new int[pendant.size()-1][2];
+                int index = 0;
+                for(int l = 0; l < pendant.size();l++)
+                {
+                    if(l == i) continue;
+                    edges[index++] = pendant.get(l);
+                }
+                if(MAF(tree, forest,edges,k))
                     return true;
             }
+            
         }
 
         for(Operation op : operations)
