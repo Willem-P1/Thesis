@@ -88,6 +88,7 @@ public class Tree {
 
     public void printDeg()
     {
+        System.out.println(nodes.keySet());
         for(int key : nodes.keySet())
         {
             System.out.println(key + " : " + nodes.get(key).size());

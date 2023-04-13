@@ -29,6 +29,52 @@ public class TreeOperationsRedo {
         }
     }
 
+    public class NodeRemovalOperation implements Operation
+    {
+        Tree tree1;
+        Tree tree2;
+        int v;
+        //one class to store tree operations that will have to be reverted
+        public NodeRemovalOperation(Tree tree1, Tree tree2, int v)
+        {
+            this.tree1 = tree1;
+            this.tree2 = tree2;
+            this.v = v;
+        }
+
+        public void revert()
+        {
+            //readd node
+            tree1.addNode(v);
+            tree2.addNode(v);
+        }
+    }
+
+    public class SingletonDisconnectOperation implements Operation
+    {
+        Tree tree1;
+        Tree tree2;
+        VertexSupressOperation VSOp;
+        int a;
+        //one class to store tree operations that will have to be reverted
+        public SingletonDisconnectOperation(Tree tree1, Tree tree2, VertexSupressOperation vsop,int a)
+        {
+            this.tree1 = tree1;
+            this.tree2 = tree2;
+            this.VSOp = vsop;
+            this.a = a;
+        }
+
+        public void revert()
+        {
+            VSOp.revert();
+            //readd node
+            tree1.addNode(a);
+            tree2.addNode(a);
+            tree1.addEdge(a, VSOp.v);
+        }
+    }
+
     public class CherryReductionOperation implements Operation
     {
         Tree tree1;
@@ -95,13 +141,23 @@ public class TreeOperationsRedo {
         for(int i = 0; i < edgesToRemove.length; i++)
         {
             forest.removeEdge(edgesToRemove[i][0], edgesToRemove[i][1]);
+
+            if(edgesToRemove[i][0] < 0){operations.add(suppressDeg2Vertex(forest, edgesToRemove[i][0]));}
+            if(edgesToRemove[i][1] < 0){operations.add(suppressDeg2Vertex(forest, edgesToRemove[i][1]));}
         }
         k -= edgesToRemove.length;
 
-        operations.addAll(reduceCommonCherries(tree, forest));
-
         if(k<0)
             return false;
+        
+        //reduce cherries
+        operations.addAll(reduceCommonCherries(tree, forest));
+
+        //handle singletons
+        operations.addAll(removeSingletons(tree, forest));
+
+        //reduce cherries again
+        operations.addAll(reduceCommonCherries(tree, forest));
 
         //TODO: if |Rt| <= 2 return true;
         if(tree.getTree().keySet().size() <= 2)
@@ -145,6 +201,8 @@ public class TreeOperationsRedo {
             
         }
 
+        //revert edits to trees
+        Collections.reverse(operations);
         for(Operation op : operations)
         {
             op.revert();
@@ -158,6 +216,40 @@ public class TreeOperationsRedo {
         k += edgesToRemove.length;
 
         return false;
+    }
+
+    public List<Operation> removeSingletons(Tree tree, Tree forest)
+    {
+        List<Operation> operations = new ArrayList<>();
+        List<Integer> toRemove = new ArrayList<>();
+
+        for(int v : forest.getTree().keySet())
+        {
+            if(v < 0){continue;}//dont have to check internal nodes
+            if(forest.getNode(v).size() == 0)
+            {
+                toRemove.add(v);
+            }
+            
+        }
+
+        for(int v : toRemove)
+        {
+            if(tree.getNode(v).size() == 0)//found singleton in forest
+            {
+                tree.removeNode(v);
+                forest.removeNode(v);
+                operations.add(new NodeRemovalOperation(tree, forest, v));
+            }
+            else
+            {
+                forest.removeNode(v);
+                int parent = tree.removeNode(v).get(0).getVertex();
+                VertexSupressOperation vso = suppressDeg2Vertex(tree, parent);
+                operations.add(new SingletonDisconnectOperation(tree, forest, vso, v));
+            }
+        }
+        return operations;
     }
 
     public List<Operation> reduceCommonCherries(Tree tree1, Tree tree2)
