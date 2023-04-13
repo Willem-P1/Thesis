@@ -98,11 +98,14 @@ public class TreeOperationsRedo {
         }
         k -= edgesToRemove.length;
 
+        operations.addAll(reduceCommonCherries(tree, forest));
+
         if(k<0)
             return false;
 
         //TODO: if |Rt| <= 2 return true;
-
+        if(tree.getTree().keySet().size() <= 2)
+            return true;
         //if there is a node r in Rt that is a root in Fdot2 remove r from Rt and add to Rd
         
         //find sibling pair in T1
@@ -155,6 +158,67 @@ public class TreeOperationsRedo {
         k += edgesToRemove.length;
 
         return false;
+    }
+
+    public List<Operation> reduceCommonCherries(Tree tree1, Tree tree2)
+    {
+        List<Integer> toRemove = new ArrayList<>();
+        List<Operation> operations = new ArrayList<>();
+        
+        for(int a : tree1.getTree().keySet())
+        {
+            if(a < 0){continue;}
+            
+            int b = findCherryFromNode(tree1, a);
+            if(b < a){continue;}// to prevent finding cherries twice only find the cherry from the lowest label value
+
+            //cherry found, check with other tree
+            if(check3Cherry(a, b, tree2))
+            {
+                toRemove.add(b);
+            }
+        }
+        
+        for(int v : toRemove)
+        {
+            operations.add(removeCommonCherry(tree1,tree2,v));
+        }
+        
+        if(!toRemove.isEmpty()){
+            operations.addAll(reduceCommonCherries(tree1, tree2));
+        }
+        
+        return operations;
+    }
+    
+    public int findCherryFromNode(Tree tree, int a)
+    {
+        int v = tree.getNode(a).get(0).getVertex();
+        for(Edge e : tree.getNode(v))
+        {
+            int b = e.getVertex();
+            if(b > 0 && b != a)
+                return b;
+        }
+        return -1;
+    }
+
+    //cherry of two leaves adjacent to same internal node
+    public boolean check3Cherry(int a, int b, Tree tree)
+    {
+        int v1 = tree.getNode(a).get(0).getVertex();
+        int v2 = tree.getNode(b).get(0).getVertex();
+        return v1 == v2;//|| v1 == b
+        
+    }
+
+    //cherry of two adjacent leaves
+    public boolean check2Cherry(int a, int b, Tree tree)
+    {
+        int v1 = tree.getNode(a).get(0).getVertex();
+        int v2 = tree.getNode(b).get(0).getVertex();
+        return v1 == b && v2 == a;
+        
     }
 
     public List<int[]> getPendantNodes(Tree forest, List<Integer> path)

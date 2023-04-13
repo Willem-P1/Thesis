@@ -8,30 +8,31 @@ public class Main {
         Parser l = new Parser("code/test.txt");
         Tree[] trees  = l.parse();
         TreeOperationsRedo to = new TreeOperationsRedo();
+        System.out.println("Cherry reduction test");
+        System.out.println("tree 1");
+        System.out.println(trees[0]);
+        System.out.println("tree 2");
+        System.out.println(trees[1]);
+
+        List<Operation> ops = to.reduceCommonCherries(trees[0], trees[1]);
+        System.out.println("after reduction:");
+        System.out.println("tree 1");
+        System.out.println(trees[0]);
+        System.out.println("tree 2");
+        System.out.println(trees[1]);
         
-        //Routine to test tree opreations
-        System.out.println("Suppression test");
-        System.out.println(trees[0]);
-        // trees[0].printDeg();
-        to.suppressDeg2Vertex(trees[0], -2);
-        System.out.println(trees[0]);
-        System.out.println("Path test");
-        List<Integer> path = to.findPath(trees[0],48, 21);
-        System.out.println(path);
-        List<int[]> pendantNodes = to.getPendantNodes(trees[0], path);
-        for(int[] arr : pendantNodes)
+        Collections.reverse(ops);
+        
+        for(Operation op : ops)
         {
-            System.out.print(arr[1] + " ");
+            op.revert();
         }
-        System.out.print("\n");
-        int[] cherry = to.findCherry(trees[0]);
-        System.out.println(cherry[0] + ", " + cherry[1]);
-        
-        Operation op = to.removeCommonCherry(trees[0], trees[1], 50);
+
+        System.out.println("after reversal:");
+        System.out.println("tree 1");
         System.out.println(trees[0]);
-        op.revert();
-        System.out.println("after reversal");
-        System.out.println(trees[0]);
+        System.out.println("tree 2");
+        System.out.println(trees[1]);
     }
 
     public static void testPathFinding()
@@ -55,5 +56,35 @@ public class Main {
         System.out.println("time: " + time);
         System.out.println("avg len: " + sum/n);
         // System.out.println(to.findPath(trees[1], 16, 14));
+    }
+
+    public static void reversalTest()
+    {
+        Parser l = new Parser("code/test.txt");
+        Tree[] trees  = l.parse();
+        TreeOperationsRedo to = new TreeOperationsRedo();
+        //Routine to test tree opreations
+        System.out.println("Suppression test");
+        System.out.println(trees[0]);
+        // trees[0].printDeg();
+        to.suppressDeg2Vertex(trees[0], -2);
+        System.out.println(trees[0]);
+        System.out.println("Path test");
+        List<Integer> path = to.findPath(trees[0],48, 21);
+        System.out.println(path);
+        List<int[]> pendantNodes = to.getPendantNodes(trees[0], path);
+        for(int[] arr : pendantNodes)
+        {
+            System.out.print(arr[1] + " ");
+        }
+        System.out.print("\n");
+        int[] cherry = to.findCherry(trees[0]);
+        System.out.println(cherry[0] + ", " + cherry[1]);
+        
+        Operation op = to.removeCommonCherry(trees[0], trees[1], 50);
+        System.out.println(trees[0]);
+        op.revert();
+        System.out.println("after reversal");
+        System.out.println(trees[0]);
     }
 }

@@ -60,6 +60,7 @@ public class Tree {
 
     public void bisectEdge(int from, int to, int label)
     {
+        System.out.println(from  + " - " + to);
         removeEdge(from, to);
         addNode(label);
         addEdge(from, label);
