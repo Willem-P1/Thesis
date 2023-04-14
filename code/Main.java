@@ -5,7 +5,20 @@ import code.TreeOperationsRedo.Operation;
 public class Main {
     public static void main(String[] args) {
         // testPathFinding();
-        
+        Parser l = new Parser("code/test.txt");
+        Tree[] trees  = l.parse();
+        TreeOperationsRedo to = new TreeOperationsRedo();
+        to.reduceCommonCherries(trees[0], trees[1]);
+        to.suppressDeg2Vertex(trees[0], -2);
+        to.suppressDeg2Vertex(trees[1], -2);
+        // System.out.println(trees[0]);
+        System.out.println(to.MAF(trees[0], trees[1], new int[0][0], 3));
+        // System.out.println("after MAF");
+        // System.out.println(trees[0]);
+    }
+
+    public static void singletonRemovalTest()
+    {
         Tree[] trees  = new Tree[2];
         trees[0] = new Tree();
         trees[1] = new Tree();
@@ -18,24 +31,28 @@ public class Main {
         trees[0].addEdge(-2, 1);
         trees[0].addEdge(-2, 2);
         trees[0].addEdge(-2, 3);
+        
         trees[1].addNode(1);
         trees[1].addNode(4);
-        trees[1].addEdge(1, 4);
 
 
         TreeOperationsRedo to = new TreeOperationsRedo();
         System.out.println("singleton removal test");
         System.out.println("tree 1");
         System.out.println(trees[0]);
+        trees[0].printDeg();
         System.out.println("tree 2");
         System.out.println(trees[1]);
+        trees[1].printDeg();
 
         List<Operation> ops = to.removeSingletons(trees[0], trees[1]);
         System.out.println("after singleton removal");
         System.out.println("tree 1");
         System.out.println(trees[0]);
+        trees[0].printDeg();
         System.out.println("tree 2");
         System.out.println(trees[1]);
+        trees[1].printDeg();
 
         for(Operation op : ops)
         {
@@ -45,9 +62,12 @@ public class Main {
         System.out.println("after reversal:");
         System.out.println("tree 1");
         System.out.println(trees[0]);
+        trees[0].printDeg();
         System.out.println("tree 2");
         System.out.println(trees[1]);
+        trees[1].printDeg();
     }
+
     public static void cherryReducionTest()
     {
         Parser l = new Parser("code/test.txt");

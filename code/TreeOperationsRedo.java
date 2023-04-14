@@ -3,6 +3,8 @@ package code;
 import java.util.*;
 
 public class TreeOperationsRedo {
+    private final boolean DEBUG = false;
+    
     public interface Operation
     {
         public void revert();
@@ -26,6 +28,24 @@ public class TreeOperationsRedo {
             int a = edges.get(0).getVertex();
             int b = edges.get(1).getVertex();
             tree.bisectEdge(a, b, v);
+        }
+    }
+
+    public class EdgeRemovalOperation implements Operation
+    {
+        Tree tree;
+        int a,b;
+        //one class to store tree operations that will have to be reverted
+        public EdgeRemovalOperation(Tree tree, int a, int b)
+        {
+            this.tree = tree;
+            this.a = a;
+            this.b = b;
+        }
+
+        public void revert()
+        {
+            tree.addEdge(a, b);
         }
     }
 
@@ -110,6 +130,8 @@ public class TreeOperationsRedo {
 
     public VertexSupressOperation suppressDeg2Vertex(Tree tree, int v)
     {
+        if(DEBUG)
+            System.out.println("Supress: " + v);
         List<Edge> edges = tree.removeNode(v);
         
         //edges list should be size 2, if not you messed up
@@ -128,9 +150,11 @@ public class TreeOperationsRedo {
         return new CherryReductionOperation(tree, forest, v, op1, op2);
     }
     
-    public void revertSupression(Operation op)
+    public Operation removeEdge(Tree tree, int a , int b)
     {
-        op.revert();
+        tree.removeEdge(a, b);
+
+        return new EdgeRemovalOperation(tree,a,b);
     }
 
     //find path from a to b
@@ -138,26 +162,34 @@ public class TreeOperationsRedo {
     {
         List<Operation> operations = new ArrayList<>();
         //remove edges
+        if(DEBUG)
+            System.out.println("Edges to remove:");
         for(int i = 0; i < edgesToRemove.length; i++)
         {
-            forest.removeEdge(edgesToRemove[i][0], edgesToRemove[i][1]);
+            if(DEBUG)
+                System.out.println(edgesToRemove[i][0] + " - " + edgesToRemove[i][1]);
+            operations.add(removeEdge(forest, edgesToRemove[i][0], edgesToRemove[i][1]));
 
             if(edgesToRemove[i][0] < 0){operations.add(suppressDeg2Vertex(forest, edgesToRemove[i][0]));}
             if(edgesToRemove[i][1] < 0){operations.add(suppressDeg2Vertex(forest, edgesToRemove[i][1]));}
         }
         k -= edgesToRemove.length;
 
-        if(k<0)
+        if(k<0){
+            reverseOperations(operations);
             return false;
-        
-        //reduce cherries
-        operations.addAll(reduceCommonCherries(tree, forest));
+        }
+        int operationNum;
+        do
+        {
+            operationNum = operations.size();
+            //handle singletons
+            operations.addAll(removeSingletons(tree, forest));
 
-        //handle singletons
-        operations.addAll(removeSingletons(tree, forest));
-
-        //reduce cherries again
-        operations.addAll(reduceCommonCherries(tree, forest));
+            //reduce cherries
+            operations.addAll(reduceCommonCherries(tree, forest));
+        }
+        while(operationNum != operations.size());
 
         //TODO: if |Rt| <= 2 return true;
         if(tree.getTree().keySet().size() <= 2)
@@ -168,16 +200,22 @@ public class TreeOperationsRedo {
         int[] ab = findCherry(tree);
         int a = ab[0];
         int b = ab[1];
+        if(DEBUG){
+            System.out.println("[" + ab[0] + ", " + ab[1] + "]");
+            System.out.println(forest);
+        }
         List<Integer> path = findPath(forest, a, b);
 
         //find edges to cherry
         List<Edge> edgesA = forest.getNode(a);
         List<Edge> edgesB = forest.getNode(b);
+        System.out.println("[" + ab[0] + ", " + ab[1] + "]");
+
         //since a and b are leaves both lists should be of size 1
         if(MAF(tree, forest,new int[][]{{a,edgesA.get(0).getVertex()}},k))
             return true;
 
-        if(MAF(tree, forest,new int[][]{{a,edgesB.get(0).getVertex()}},k))
+        if(MAF(tree, forest,new int[][]{{b,edgesB.get(0).getVertex()}},k))
             return true;
 
         if(path != null)//ther is a path within forest
@@ -202,17 +240,8 @@ public class TreeOperationsRedo {
         }
 
         //revert edits to trees
-        Collections.reverse(operations);
-        for(Operation op : operations)
-        {
-            op.revert();
-        }
+        reverseOperations(operations);
 
-        //readd edges
-        for(int i = 0; i < edgesToRemove.length; i++)
-        {
-            forest.addEdge(edgesToRemove[i][0], edgesToRemove[i][1]);
-        }
         k += edgesToRemove.length;
 
         return false;
@@ -316,13 +345,19 @@ public class TreeOperationsRedo {
     public List<int[]> getPendantNodes(Tree forest, List<Integer> path)
     {
         List<int[]> pendant = new ArrayList<>();
-
+        if(DEBUG){
+            System.out.println(path);
+            System.out.println(forest);
+            forest.printDeg();
+        }
         for(int i = 0; i < path.size();i++)
         {
             int label = path.get(i);
             if(label > 0){continue;}
             int other = path.get(i - 1);
             int other2 = path.get(i + 1);
+            if(DEBUG)
+                System.out.println(label);
             
             for(Edge e : forest.getNode(label))
             {
@@ -388,5 +423,14 @@ public class TreeOperationsRedo {
             }
         }
         return false;
+    }
+
+    private void reverseOperations(List<Operation> operations)
+    {
+        Collections.reverse(operations);
+        for(Operation op : operations)
+        {
+            op.revert();
+        }
     }
 }

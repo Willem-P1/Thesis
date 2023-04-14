@@ -60,7 +60,6 @@ public class Tree {
 
     public void bisectEdge(int from, int to, int label)
     {
-        System.out.println(from  + " - " + to);
         removeEdge(from, to);
         addNode(label);
         addEdge(from, label);
@@ -76,6 +75,7 @@ public class Tree {
     @Override
     public String toString() {
         String output = "";
+        System.out.println(nodes.keySet());
         for(int key : nodes.keySet())
         {
             for(Edge e : nodes.get(key))
@@ -88,7 +88,6 @@ public class Tree {
 
     public void printDeg()
     {
-        System.out.println(nodes.keySet());
         for(int key : nodes.keySet())
         {
             System.out.println(key + " : " + nodes.get(key).size());
