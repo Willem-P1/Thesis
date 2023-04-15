@@ -209,11 +209,27 @@ public class TreeOperationsRedo {
         //find edges to cherry
         List<Edge> edgesA = forest.getNode(a);
         List<Edge> edgesB = forest.getNode(b);
-        System.out.println("[" + ab[0] + ", " + ab[1] + "]");
-
+        System.out.println("1. [" + ab[0] + ", " + ab[1] + "]");
+        System.out.println("2. [" + a + ", " + b + "]");
+        if(a == 16)
+        {
+            System.out.print(b + " ");
+            System.out.println(forest);
+            System.out.println("edges: " + edgesB);
+        }
         //since a and b are leaves both lists should be of size 1
         if(MAF(tree, forest,new int[][]{{a,edgesA.get(0).getVertex()}},k))
             return true;
+        
+        if(a == 16)
+        {
+            System.out.print(b + " ");
+            System.out.println(forest);
+            System.out.println(edgesB);
+        }
+
+        System.out.println("3. [" + ab[0] + ", " + ab[1] + "]");
+        System.out.println("4. [" + a + ", " + b + "]");
 
         if(MAF(tree, forest,new int[][]{{b,edgesB.get(0).getVertex()}},k))
             return true;
