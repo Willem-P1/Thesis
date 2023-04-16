@@ -46,6 +46,7 @@ public class Parser {
 
         subtree();
         match(TokenType.Semicolon);
+        matchIf(TokenType.newLine);
         match(TokenType.EOI);
 
         currTree.removeNode(-1);//remove added root node

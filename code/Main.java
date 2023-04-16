@@ -5,14 +5,31 @@ import code.TreeOperationsRedo.Operation;
 public class Main {
     public static void main(String[] args) {
         // testPathFinding();
-        Parser l = new Parser("code/test.txt");
+        boolean DEBUG = false;
+        for(String s : args)
+        {
+            if(s.equals("-d")){DEBUG = true;}
+        }
+        Parser l;
+        if(DEBUG){
+            l = new Parser("code/test.txt");
+        }else{
+            l = new Parser(args[0]);
+        }
+
         Tree[] trees  = l.parse();
         TreeOperationsRedo to = new TreeOperationsRedo();
         to.reduceCommonCherries(trees[0], trees[1]);
         to.suppressDeg2Vertex(trees[0], -2);
         to.suppressDeg2Vertex(trees[1], -2);
         // System.out.println(trees[0]);
-        System.out.println(to.MAF(trees[0], trees[1], new int[0][0], 3));
+        
+        for(int i = 1; i <= 10; i++){
+            boolean result = to.MAF(trees[0], trees[1], new int[0][0], i);
+            System.out.println("k=" + i + " : " + result);
+            if(result)
+                break;
+        }
         // System.out.println("after MAF");
         // System.out.println(trees[0]);
     }
