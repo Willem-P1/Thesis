@@ -24,7 +24,7 @@ public class Main {
         to.suppressDeg2Vertex(trees[1], -2);
         // System.out.println(trees[0]);
         
-        for(int i = 1; i <= 10; i++){
+        for(int i = 5; i <= 15; i++){
             boolean result = to.MAF(trees[0], trees[1], new int[0][0], i);
             System.out.println("k=" + i + " : " + result);
             if(result)

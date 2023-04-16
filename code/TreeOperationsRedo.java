@@ -186,13 +186,15 @@ public class TreeOperationsRedo {
             //handle singletons
             operations.addAll(removeSingletons(tree, forest));
 
+            if(k==0){System.out.println(tree.size() + " : " + forest.size() + "   " + tree.getTree().keySet() + forest.getTree().keySet());}
+
             //reduce cherries
             operations.addAll(reduceCommonCherries(tree, forest));
         }
         while(operationNum != operations.size());
 
         //TODO: if |Rt| <= 2 return true;
-        if(tree.getTree().keySet().size() <= 2)
+        if(tree.size() <= 2)
             return true;
         //if there is a node r in Rt that is a root in Fdot2 remove r from Rt and add to Rd
         
@@ -284,7 +286,7 @@ public class TreeOperationsRedo {
 
         for(int v : toRemove)
         {
-            if(tree.getNode(v).size() == 0)//found singleton in forest
+            if(tree.getNode(v).size() == 0)//found singleton in tree too
             {
                 tree.removeNode(v);
                 forest.removeNode(v);
@@ -303,7 +305,9 @@ public class TreeOperationsRedo {
 
     public List<Operation> reduceCommonCherries(Tree tree1, Tree tree2)
     {
-        List<Integer> toRemove = new ArrayList<>();
+        System.out.println(tree1.size() + " : " + tree2.size() + "   " + tree1.getTree().keySet() + tree2.getTree().keySet());
+
+        Set<Integer> toRemove = new HashSet<>();
         List<Operation> operations = new ArrayList<>();
         
         for(int a : tree1.getTree().keySet())
@@ -316,12 +320,14 @@ public class TreeOperationsRedo {
             //cherry found, check with other tree
             if(check3Cherry(a, b, tree2))
             {
-                toRemove.add(b);
+                if(!toRemove.contains(b))
+                    toRemove.add(b);
             }
         }
         
         for(int v : toRemove)
         {
+            System.out.println(v);
             operations.add(removeCommonCherry(tree1,tree2,v));
         }
         

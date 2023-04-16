@@ -94,5 +94,16 @@ public class Tree {
         }
     }
 
+    public int size()
+    {
+        int count = 0;
+        for(int v : nodes.keySet())
+        {
+            if(v > 0)
+                count++;
+        }
+        return count;
+    }
+
     
 }
