@@ -8,12 +8,17 @@ public class debug {
 
         tree.addNode(1);
         tree.addNode(42);
-        tree.addEdge(42, 1);
+        tree.addNode(-1);
+        tree.addNode(2);
+        tree.addEdge(42, -1);
+        tree.addEdge(1, -1);
+        tree.addEdge(2, -1);
 
 
 
         forest.addNode(1);
         forest.addNode(42);
+        forest.addNode(2);
         forest.addEdge(1, 42);
 
         TreeOperationsRedo to = new TreeOperationsRedo();

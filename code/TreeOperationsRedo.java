@@ -95,7 +95,7 @@ public class TreeOperationsRedo {
         }
     }
 
-    public class CherryReductionOperation implements Operation
+    public class CherryReductionOperation33 implements Operation
     {
         Tree tree1;
         Tree tree2;
@@ -103,7 +103,7 @@ public class TreeOperationsRedo {
         VertexSupressOperation VSOp2;
         int v;
         //one class to store tree operations that will have to be reverted
-        public CherryReductionOperation(Tree tree1, Tree tree2, int v, VertexSupressOperation vsop1,VertexSupressOperation vsop2)
+        public CherryReductionOperation33(Tree tree1, Tree tree2, int v, VertexSupressOperation vsop1,VertexSupressOperation vsop2)
         {
             this.tree1 = tree1;
             this.tree2 = tree2;
@@ -128,13 +128,13 @@ public class TreeOperationsRedo {
         }
     }
 
-    public class TwoCherryReductionOperation implements Operation
+    public class CherryReductionOperation22 implements Operation
     {
         Tree tree1;
         Tree tree2;
         int a,b;
         //one class to store tree operations that will have to be reverted
-        public TwoCherryReductionOperation(Tree tree1, Tree tree2, int a, int b)
+        public CherryReductionOperation22(Tree tree1, Tree tree2, int a, int b)
         {
             this.tree1 = tree1;
             this.tree2 = tree2;
@@ -150,6 +150,37 @@ public class TreeOperationsRedo {
 
             //readd edge to create cherry
             tree1.addEdge(a, b);
+            tree2.addEdge(a, b);
+
+        }
+    }
+    
+    public class CherryReductionOperation32 implements Operation
+    {
+        Tree tree1;
+        Tree tree2;
+        VertexSupressOperation VSOp1;
+        int a,b,v;
+        //one class to store tree operations that will have to be reverted
+        public CherryReductionOperation32(Tree tree1, Tree tree2, VertexSupressOperation vsop1, int a, int b)
+        {
+            this.tree1 = tree1;
+            this.tree2 = tree2;
+            this.VSOp1 = vsop1;
+            this.a = a;
+            this.b = b;
+        }
+
+        public void revert()
+        {
+            VSOp1.revert();
+
+            //readd nodes
+            tree1.addNode(b);
+            tree2.addNode(b);
+
+            //readd edge to create cherry
+            tree1.addEdge(VSOp1.v, b);
             tree2.addEdge(a, b);
 
         }
@@ -176,11 +207,18 @@ public class TreeOperationsRedo {
         int other2 = edges2.get(0).getVertex();
         if(other1 > 0 && other2 == other1){
             //a--b cherry
-            return new TwoCherryReductionOperation(tree, forest, other1, v);
+            return new CherryReductionOperation22(tree, forest, other1, v);
+        }
+
+        if(other2 > 0 && other2 != other1){
+            //forest has a--b cherry
+            //tree has normal cherry
+            VertexSupressOperation op1 = suppressDeg2Vertex(tree, other1);
+            return new CherryReductionOperation32(tree, forest, op1, other2, v);
         }
         VertexSupressOperation op1 = suppressDeg2Vertex(tree, other1);
         VertexSupressOperation op2 = suppressDeg2Vertex(forest, other2);
-        return new CherryReductionOperation(tree, forest, v, op1, op2);
+        return new CherryReductionOperation33(tree, forest, v, op1, op2);
     }
     
     public Operation removeEdge(Tree tree, int a , int b)
@@ -321,7 +359,7 @@ public class TreeOperationsRedo {
 
     public List<Operation> reduceCommonCherries(Tree tree1, Tree tree2)
     {
-        System.out.println(tree1.size() + " : " + tree2.size() + "   " + tree1.getTree().keySet() + tree2.getTree().keySet());
+        // System.out.println(tree1.size() + " : " + tree2.size() + "   " + tree1.getTree().keySet() + tree2.getTree().keySet());
 
         Set<Integer> toRemove = new HashSet<>();
         List<Operation> operations = new ArrayList<>();
@@ -343,7 +381,8 @@ public class TreeOperationsRedo {
         
         for(int v : toRemove)
         {
-            System.out.println(v);
+            // System.out.println(v);
+            // System.out.println(tree2.getNode(v));
             operations.add(removeCommonCherry(tree1,tree2,v));
         }
         
@@ -370,18 +409,10 @@ public class TreeOperationsRedo {
     //check for cherry
     public boolean checkCherry(int a, int b, Tree tree)
     {
+        if(tree.getNode(a).size() == 0 || tree.getNode(b).size() == 0){return false;}
         int v1 = tree.getNode(a).get(0).getVertex();
         int v2 = tree.getNode(b).get(0).getVertex();
         return v1 == v2 || v1 == b;//also find a--b cherries
-        
-    }
-
-    //cherry of two adjacent leaves
-    public boolean check2Cherry(int a, int b, Tree tree)
-    {
-        int v1 = tree.getNode(a).get(0).getVertex();
-        int v2 = tree.getNode(b).get(0).getVertex();
-        return v1 == b && v2 == a;
         
     }
 
