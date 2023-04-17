@@ -128,6 +128,33 @@ public class TreeOperationsRedo {
         }
     }
 
+    public class TwoCherryReductionOperation implements Operation
+    {
+        Tree tree1;
+        Tree tree2;
+        int a,b;
+        //one class to store tree operations that will have to be reverted
+        public TwoCherryReductionOperation(Tree tree1, Tree tree2, int a, int b)
+        {
+            this.tree1 = tree1;
+            this.tree2 = tree2;
+            this.a = a;
+            this.b = b;
+        }
+
+        public void revert()
+        {
+            //readd nodes
+            tree1.addNode(b);
+            tree2.addNode(b);
+
+            //readd edge to create cherry
+            tree1.addEdge(a, b);
+            tree2.addEdge(a, b);
+
+        }
+    }
+
     public VertexSupressOperation suppressDeg2Vertex(Tree tree, int v)
     {
         if(DEBUG)
@@ -145,8 +172,14 @@ public class TreeOperationsRedo {
     {
         List<Edge> edges1 = tree.removeNode(v);
         List<Edge> edges2 = forest.removeNode(v);
-        VertexSupressOperation op1 = suppressDeg2Vertex(tree, edges1.get(0).getVertex());
-        VertexSupressOperation op2 = suppressDeg2Vertex(forest, edges2.get(0).getVertex());
+        int other1 = edges1.get(0).getVertex();
+        int other2 = edges2.get(0).getVertex();
+        if(other1 > 0 && other2 == other1){
+            //a--b cherry
+            return new TwoCherryReductionOperation(tree, forest, other1, v);
+        }
+        VertexSupressOperation op1 = suppressDeg2Vertex(tree, other1);
+        VertexSupressOperation op2 = suppressDeg2Vertex(forest, other2);
         return new CherryReductionOperation(tree, forest, v, op1, op2);
     }
     
@@ -186,7 +219,7 @@ public class TreeOperationsRedo {
             //handle singletons
             operations.addAll(removeSingletons(tree, forest));
 
-            if(k==0){System.out.println(tree.size() + " : " + forest.size() + "   " + tree.getTree().keySet() + forest.getTree().keySet());}
+            if(DEBUG && k==0 ){System.out.println(tree.size() + " : " + forest.size() + "   " + tree.getTree().keySet() + forest.getTree().keySet());}
 
             //reduce cherries
             operations.addAll(reduceCommonCherries(tree, forest));
@@ -215,32 +248,15 @@ public class TreeOperationsRedo {
         // I do not know what caused this but this might fix the symptoms
         int parentA = forest.getNode(a).get(0).getVertex();
         int parentB = forest.getNode(b).get(0).getVertex();
-        // System.out.println("1. [" + ab[0] + ", " + ab[1] + "]");
-        // System.out.println("2. [" + a + ", " + b + "]");
-        // if(a == 16)
-        // {
-        //     System.out.print(b + " ");
-        //     System.out.println(forest);
-        //     // System.out.println("edges: " + edgesB);
-        // }
+        
         //since a and b are leaves both lists should be of size 1
         if(MAF(tree, forest,new int[][]{{a,parentA}},k))
             return true;
-        
-        // if(a == 16)
-        // {
-        //     System.out.print(b + " ");
-        //     System.out.println(forest);
-        //     // System.out.println(edgesB);
-        // }
-
-        // System.out.println("3. [" + ab[0] + ", " + ab[1] + "]");
-        // System.out.println("4. [" + a + ", " + b + "]");
 
         if(MAF(tree, forest,new int[][]{{b,parentB}},k))
             return true;
 
-        if(path != null)//ther is a path within forest
+        if(path != null)//there is a path within forest
         {
             //get pendant nodes
             //you know the nodes and the two connections so we just have to find the third unkown node to get the pendant node
@@ -313,12 +329,12 @@ public class TreeOperationsRedo {
         for(int a : tree1.getTree().keySet())
         {
             if(a < 0){continue;}
-            
+            if(tree1.getNode(a).size() == 0){continue;}//a is a singleton
             int b = findCherryFromNode(tree1, a);
             if(b < a){continue;}// to prevent finding cherries twice only find the cherry from the lowest label value
 
             //cherry found, check with other tree
-            if(check3Cherry(a, b, tree2))
+            if(checkCherry(a, b, tree2))
             {
                 if(!toRemove.contains(b))
                     toRemove.add(b);
@@ -341,6 +357,7 @@ public class TreeOperationsRedo {
     public int findCherryFromNode(Tree tree, int a)
     {
         int v = tree.getNode(a).get(0).getVertex();
+        if(v > 0){return v;}//a--b cherry
         for(Edge e : tree.getNode(v))
         {
             int b = e.getVertex();
@@ -350,12 +367,12 @@ public class TreeOperationsRedo {
         return -1;
     }
 
-    //cherry of two leaves adjacent to same internal node
-    public boolean check3Cherry(int a, int b, Tree tree)
+    //check for cherry
+    public boolean checkCherry(int a, int b, Tree tree)
     {
         int v1 = tree.getNode(a).get(0).getVertex();
         int v2 = tree.getNode(b).get(0).getVertex();
-        return v1 == v2;//|| v1 == b
+        return v1 == v2 || v1 == b;//also find a--b cherries
         
     }
 

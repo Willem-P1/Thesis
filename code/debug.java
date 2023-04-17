@@ -8,25 +8,22 @@ public class debug {
 
         tree.addNode(1);
         tree.addNode(42);
-        tree.addNode(47);
-        tree.addNode(-49);
-        tree.addEdge(-49, 1);
-        tree.addEdge(-49, 42);
-        tree.addEdge(-49, 47);
+        tree.addEdge(42, 1);
 
 
 
         forest.addNode(1);
-        forest.addNode(-4);
         forest.addNode(42);
-        forest.addNode(47);
-
-        forest.addEdge(-4, 1);
-        forest.addEdge(-4, 42);
-        forest.addEdge(-4, 47);
+        forest.addEdge(1, 42);
 
         TreeOperationsRedo to = new TreeOperationsRedo();
+        tree.printDeg();
+        forest.printDeg();
 
         to.reduceCommonCherries(tree, forest);
+        
+        tree.printDeg();
+        forest.printDeg();
+
     }
 }
