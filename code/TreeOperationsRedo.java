@@ -53,20 +53,28 @@ public class TreeOperationsRedo {
     {
         Tree tree1;
         Tree tree2;
-        int v;
+        int a,b;
+        boolean addEdge;
+
         //one class to store tree operations that will have to be reverted
-        public NodeRemovalOperation(Tree tree1, Tree tree2, int v)
+        public NodeRemovalOperation(Tree tree1, Tree tree2, int a, boolean addEdge, int b)
         {
             this.tree1 = tree1;
             this.tree2 = tree2;
-            this.v = v;
+            this.a = a;
+            this.b = b;
+            this.addEdge = addEdge;
         }
 
         public void revert()
         {
             //readd node
-            tree1.addNode(v);
-            tree2.addNode(v);
+            tree1.addNode(a);
+            tree2.addNode(a);
+            
+            if(addEdge)
+                tree1.addEdge(a, b);
+
         }
     }
 
@@ -344,14 +352,22 @@ public class TreeOperationsRedo {
             {
                 tree.removeNode(v);
                 forest.removeNode(v);
-                operations.add(new NodeRemovalOperation(tree, forest, v));
+                operations.add(new NodeRemovalOperation(tree, forest, v, false, -1));
             }
             else
             {
                 forest.removeNode(v);
                 int parent = tree.removeNode(v).get(0).getVertex();
-                VertexSupressOperation vso = suppressDeg2Vertex(tree, parent);
-                operations.add(new SingletonDisconnectOperation(tree, forest, vso, v));
+                if(parent > 0)
+                {
+                    operations.add(new NodeRemovalOperation(tree, forest, v, true, parent));
+
+                }else
+                {
+                    VertexSupressOperation vso = suppressDeg2Vertex(tree, parent);
+                    operations.add(new SingletonDisconnectOperation(tree, forest, vso, v));
+                     
+                }
             }
         }
         return operations;
