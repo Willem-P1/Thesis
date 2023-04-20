@@ -3,29 +3,71 @@ import java.util.*;
 import code.TreeOperations.Operation;
 
 public class Main {
+
+    public static int a,b,c;
     public static void main(String[] args) {
         // testPathFinding();
         boolean DEBUG = false;
         boolean testAll = false;
+        boolean useRandom = false;
+        int n = 20;//default n value
         for(String s : args)
         {
             if(s.equals("-d")){DEBUG = true;}
-            if(s.equals("-a")){testAll = true;}
+            else if(s.equals("-r")){useRandom = true;}
+            else if(s.equals("-a")){testAll = true;}
         }
         Parser l;
         if(DEBUG){
-            l = new Parser("code/test.txt");
-        }else if(testAll){
-            runAll();
+            if(useRandom){runOneRandom("code/test.txt",n);}
+            else{runOne("code/test.txt");}
         }else{
-            runOne(args[0]);
+            if(useRandom){
+                if(testAll){
+                    runAllRandom(n);
+                }else{
+                    runOneRandom(args[0],n);
+                }
+            }else
+            {
+                if(testAll){
+                    runAll();
+                }else{
+                    runOne(args[0]);
+                }
+            }           
         }
 
-        
+        System.out.println(a + ", " + b + ", " + c);
         // System.out.println("after MAF");
         // System.out.println(trees[0]);
     }
+    public static void runAllRandom(int n)
+    {
+        // String path = "D:\\UM\\Thesis\\Thesis\\kernelizing-agreement-forests-main\\code\\maindataset\\";
+        String path = "D:\\UM\\Thesis\\Thesis\\kernelizing-agreement-forests-main\\code\\largetreedataset\\";
+        String[] xNum = {"3000"};//"50","100", "150","200", "250", "300", "350",
+        String[] tbr = {"35"};//,"15","20, "30","};
+        String[] skew = {"50","70","90"};
+        String[] id = {"01","02","03","04", "05"};
 
+        for(String x : xNum)
+        {
+            for(String t : tbr)
+            {
+                for(String s : skew)
+                {
+                    for(String i : id)
+                    {
+                        List<String> list = Arrays.asList("TREEPAIR",x,t,s,i);
+                        String name = String.join("_", list);
+                        System.out.print(name + ", ");
+                        runOneRandom(path + name + ".tree", n);
+                    }
+                }
+            }
+        }
+    }
     public static void runAll()
     {
         String path = "D:\\UM\\Thesis\\Thesis\\kernelizing-agreement-forests-main\\code\\maindataset\\";
@@ -51,7 +93,34 @@ public class Main {
             }
         }
     }
+    public static void runOneRandom(String path, int n)
+    {
+        TreeOperations to = new TreeOperations();
+        int count = 0;
 
+        // System.out.println(trees[0]);
+        int min = Integer.MAX_VALUE;
+        //for(int i = 0;i < n;i++)
+        long startTime = System.nanoTime();
+        long endTime = startTime;
+        // for(int i =0; i < n; i++)
+        while(endTime - startTime < 60e9)
+        {
+            count++;
+            Parser l = new Parser(path);
+            Tree[] trees  = l.parse();
+            to.reduceCommonCherries(trees[0], trees[1]);
+            to.suppressDeg2Vertex(trees[0], -2);
+            to.suppressDeg2Vertex(trees[1], -2);
+
+            int result = to.MCTBR(trees[0], trees[1], new int[0][0], 0);
+            if(result < min)
+                min = result;
+            
+            endTime =  System.nanoTime();
+        }
+        System.out.println("k=" + min + ", " + count);
+    }
     public static void runOne(String path)
     {
         Parser l = new Parser(path);
@@ -61,7 +130,6 @@ public class Main {
         to.suppressDeg2Vertex(trees[0], -2);
         to.suppressDeg2Vertex(trees[1], -2);
         // System.out.println(trees[0]);
-        
         for(int i = 0; i <= 15; i++){
             boolean result = to.MAF(trees[0], trees[1], new int[0][0], i);
             if(result){
