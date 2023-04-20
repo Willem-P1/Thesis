@@ -1,6 +1,6 @@
 package code;
 import java.util.*;
-import code.TreeOperationsRedo.Operation;
+import code.TreeOperations.Operation;
 
 public class Main {
     public static void main(String[] args) {
@@ -56,7 +56,7 @@ public class Main {
     {
         Parser l = new Parser(path);
         Tree[] trees  = l.parse();
-        TreeOperationsRedo to = new TreeOperationsRedo();
+        TreeOperations to = new TreeOperations();
         to.reduceCommonCherries(trees[0], trees[1]);
         to.suppressDeg2Vertex(trees[0], -2);
         to.suppressDeg2Vertex(trees[1], -2);
@@ -91,7 +91,7 @@ public class Main {
         trees[1].addNode(4);
 
 
-        TreeOperationsRedo to = new TreeOperationsRedo();
+        TreeOperations to = new TreeOperations();
         System.out.println("singleton removal test");
         System.out.println("tree 1");
         System.out.println(trees[0]);
@@ -127,7 +127,7 @@ public class Main {
     {
         Parser l = new Parser("code/test.txt");
         Tree[] trees  = l.parse();
-        TreeOperationsRedo to = new TreeOperationsRedo();
+        TreeOperations to = new TreeOperations();
         System.out.println("Cherry reduction test");
         System.out.println("tree 1");
         System.out.println(trees[0]);
@@ -181,7 +181,7 @@ public class Main {
     {
         Parser l = new Parser("code/test.txt");
         Tree[] trees  = l.parse();
-        TreeOperationsRedo to = new TreeOperationsRedo();
+        TreeOperations to = new TreeOperations();
         //Routine to test tree opreations
         System.out.println("Suppression test");
         System.out.println(trees[0]);

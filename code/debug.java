@@ -21,7 +21,7 @@ public class debug {
         forest.addNode(2);
         forest.addEdge(1, 42);
 
-        TreeOperationsRedo to = new TreeOperationsRedo();
+        TreeOperations to = new TreeOperations();
         tree.printDeg();
         forest.printDeg();
 

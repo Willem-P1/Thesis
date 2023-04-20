@@ -3,197 +3,489 @@ package code;
 import java.util.*;
 
 public class TreeOperations {
-    // class for making all the algoritmic tree modifications like:
-    // common cherry reduction, degree 2 vertex supression, etc.
-    // I didnt want this in the tree class due to clutter
+    private final boolean DEBUG = false;
     
-    //function to surpress all degree 2 vertices
-    public void supressDeg2Vertex(Tree tree)
+    public interface Operation
     {
-        List<Integer> toRemove = new ArrayList<>();
-        
-        for(int v : tree.getTree().keySet())
-        {
-            if(v > 0){continue;}//leaf nodes always have only one edge cannot become 2 if everything is done correctly
-            List<Edge> edges = tree.getTree().get(v);
-            if(edges.size() == 2){
-                toRemove.add(v);
-            }
-        }
-
-        for(int v : toRemove)
-        {
-            supressDeg2Vertex(tree, v);
-        }
-        //remove this to remove looping
-        if(!toRemove.isEmpty()){supressDeg2Vertex(tree);}
+        public void revert();
     }
 
-    //this assumes a size of tree > 3
-    //TODO: i do not like the size of this function
-    public void commonCherryReduction(Tree tree, Tree other)
+    public class VertexSupressOperation implements Operation
     {
-        List<Integer> toRemove = new ArrayList<>();
-        for(int v : tree.getTree().keySet())
+        Tree tree;
+        List<Edge> edges;
+        public int v;
+        //one class to store tree operations that will have to be reverted
+        public VertexSupressOperation(Tree tree, List<Edge> edges, int v)
         {
-            if(v > 0){continue;}//only check internal nodes
-            List<Edge> edges = tree.getTree().get(v);
-            int[] leaves = new int[3];//just use 3 in case of a fuckup, prevents errors when |X| = 3
-            int leafCount = 0;
-            for(Edge e : edges)
-            {
-                if(e.getVertex() > 0){leaves[leafCount++] = e.getVertex();}
-            }
-
-            if(leafCount >= 2)
-            {
-                //check for cherry on other tree
-                List<Edge> otherEdges = other.getTree().get(leaves[0]);
-                Edge otherEdge = otherEdges.get(0);//get connected internal node
-                for(Edge e : other.getTree().get(otherEdge.getVertex()))
-                {
-                    if(e.getVertex() == leaves[1])
-                    {
-                        toRemove.add(leaves[1]);
-                        break;
-                    }
-                }
-
-            }
+            this.tree = tree;
+            this.edges = edges;
+            this.v = v;
         }
-        for(int v : toRemove)
+
+        public void revert()
         {
-            tree.removeNode(v);
-            other.removeNode(v);
+            int a = edges.get(0).getVertex();
+            int b = edges.get(1).getVertex();
+            tree.bisectEdge(a, b, v);
         }
-        //remove this to remove looping reduction
-        if(!toRemove.isEmpty()){commonCherryReduction(tree, other);}
     }
 
-    public int[] findCherry(Tree tree)
+    public class EdgeRemovalOperation implements Operation
     {
-        for(int v : tree.getTree().keySet())
+        Tree tree;
+        int a,b;
+        //one class to store tree operations that will have to be reverted
+        public EdgeRemovalOperation(Tree tree, int a, int b)
         {
-            if(v > 0){continue;}
-            List<Edge> edges = tree.getTree().get(v);
-            int[] leaves = new int[3];//just use 3 in case of a fuckup, prevents errors when |X| = 3
-            int leafCount = 0;
-            for(Edge e : edges)
-            {
-                if(e.getVertex() > 0){leaves[leafCount++] = e.getVertex();}
-            }
-
-            if(leafCount >= 2)
-            {
-                return new int[]{leaves[0],leaves[1]};//cherry found
-            }
+            this.tree = tree;
+            this.a = a;
+            this.b = b;
         }
-        return null;//if no cherry was found
+
+        public void revert()
+        {
+            tree.addEdge(a, b);
+        }
+    }
+
+    public class NodeRemovalOperation implements Operation
+    {
+        Tree tree1;
+        Tree tree2;
+        int a,b;
+        boolean addEdge;
+
+        //one class to store tree operations that will have to be reverted
+        public NodeRemovalOperation(Tree tree1, Tree tree2, int a, boolean addEdge, int b)
+        {
+            this.tree1 = tree1;
+            this.tree2 = tree2;
+            this.a = a;
+            this.b = b;
+            this.addEdge = addEdge;
+        }
+
+        public void revert()
+        {
+            //readd node
+            tree1.addNode(a);
+            tree2.addNode(a);
+            
+            if(addEdge)
+                tree1.addEdge(a, b);
+
+        }
+    }
+
+    public class SingletonDisconnectOperation implements Operation
+    {
+        Tree tree1;
+        Tree tree2;
+        VertexSupressOperation VSOp;
+        int a;
+        //one class to store tree operations that will have to be reverted
+        public SingletonDisconnectOperation(Tree tree1, Tree tree2, VertexSupressOperation vsop,int a)
+        {
+            this.tree1 = tree1;
+            this.tree2 = tree2;
+            this.VSOp = vsop;
+            this.a = a;
+        }
+
+        public void revert()
+        {
+            VSOp.revert();
+            //readd node
+            tree1.addNode(a);
+            tree2.addNode(a);
+            tree1.addEdge(a, VSOp.v);
+        }
+    }
+
+    public class CherryReductionOperation33 implements Operation
+    {
+        Tree tree1;
+        Tree tree2;
+        VertexSupressOperation VSOp1;
+        VertexSupressOperation VSOp2;
+        int v;
+        //one class to store tree operations that will have to be reverted
+        public CherryReductionOperation33(Tree tree1, Tree tree2, int v, VertexSupressOperation vsop1,VertexSupressOperation vsop2)
+        {
+            this.tree1 = tree1;
+            this.tree2 = tree2;
+            this.v = v;
+            this.VSOp1 = vsop1;
+            this.VSOp2 = vsop2;
+        }
+
+        public void revert()
+        {   //readd parent node
+            VSOp1.revert();
+            VSOp2.revert();
+            
+            //readd node
+            tree1.addNode(v);
+            tree2.addNode(v);
+
+            //readd edge to create cherry
+            tree1.addEdge(v, VSOp1.v);
+            tree2.addEdge(v, VSOp2.v);
+
+        }
+    }
+
+    public class CherryReductionOperation22 implements Operation
+    {
+        Tree tree1;
+        Tree tree2;
+        int a,b;
+        //one class to store tree operations that will have to be reverted
+        public CherryReductionOperation22(Tree tree1, Tree tree2, int a, int b)
+        {
+            this.tree1 = tree1;
+            this.tree2 = tree2;
+            this.a = a;
+            this.b = b;
+        }
+
+        public void revert()
+        {
+            //readd nodes
+            tree1.addNode(b);
+            tree2.addNode(b);
+
+            //readd edge to create cherry
+            tree1.addEdge(a, b);
+            tree2.addEdge(a, b);
+
+        }
     }
     
-    //function is useful if you know which vertex needs to be supressed
-    //can be used to skip checking all vertices
-    public void supressDeg2Vertex(Tree tree, int v)
+    public class CherryReductionOperation32 implements Operation
     {
+        Tree tree1;
+        Tree tree2;
+        VertexSupressOperation VSOp1;
+        int a,b,v;
+        //one class to store tree operations that will have to be reverted
+        public CherryReductionOperation32(Tree tree1, Tree tree2, VertexSupressOperation vsop1, int a, int b)
+        {
+            this.tree1 = tree1;
+            this.tree2 = tree2;
+            this.VSOp1 = vsop1;
+            this.a = a;
+            this.b = b;
+        }
+
+        public void revert()
+        {
+            VSOp1.revert();
+
+            //readd nodes
+            tree1.addNode(b);
+            tree2.addNode(b);
+
+            //readd edge to create cherry
+            tree1.addEdge(VSOp1.v, b);
+            tree2.addEdge(a, b);
+
+        }
+    }
+
+    public VertexSupressOperation suppressDeg2Vertex(Tree tree, int v)
+    {
+        if(DEBUG)
+            System.out.println("Supress: " + v);
         List<Edge> edges = tree.removeNode(v);
         
         //edges list should be size 2, if not you messed up
         Edge edge1 = edges.get(0);
         Edge edge2 = edges.get(1);
         tree.addEdge(edge1.getVertex(), edge2.getVertex());
+        return new VertexSupressOperation(tree, edges, v);//needed for reversal of the operation
     }
 
-
-
-    public boolean MAF(Tree tree, Tree forest, int[][] edgeRemoval, int k)
+    public Operation removeCommonCherry(Tree tree, Tree forest, int v)
     {
-        //check base case
-        if(k < 0){return false;}
-
-        //First remove the edges from previous recursive call
-        for(int i = 0; i < edgeRemoval.length; i++)
-        {
-            forest.removeEdge(edgeRemoval[i][0], edgeRemoval[i][1]);
+        List<Edge> edges1 = tree.removeNode(v);
+        List<Edge> edges2 = forest.removeNode(v);
+        int other1 = edges1.get(0).getVertex();
+        int other2 = edges2.get(0).getVertex();
+        if(other1 > 0 && other2 == other1){
+            //a--b cherry
+            return new CherryReductionOperation22(tree, forest, other1, v);
         }
-        k -= edgeRemoval.length;
-        
-        //how to i revert this idk bro its needed tho
-        //and we need to remove common cherries again
-        supressDeg2Vertex(forest);
 
-        //TODO: find cherry in tree
-        //then find path in forest
-        int a = -1;
-        int b = -1;
+        if(other2 > 0 && other2 != other1){
+            //forest has a--b cherry
+            //tree has normal cherry
+            VertexSupressOperation op1 = suppressDeg2Vertex(tree, other1);
+            return new CherryReductionOperation32(tree, forest, op1, other2, v);
+        }
+        VertexSupressOperation op1 = suppressDeg2Vertex(tree, other1);
+        VertexSupressOperation op2 = suppressDeg2Vertex(forest, other2);
+        return new CherryReductionOperation33(tree, forest, v, op1, op2);
+    }
+    
+    public Operation removeEdge(Tree tree, int a , int b)
+    {
+        tree.removeEdge(a, b);
+
+        return new EdgeRemovalOperation(tree,a,b);
+    }
+
+    //find path from a to b
+    public boolean MAF(Tree tree, Tree forest, int[][] edgesToRemove, int k)
+    {
+        List<Operation> operations = new ArrayList<>();
+        //remove edges
+        if(DEBUG)
+            System.out.println("Edges to remove:");
+        for(int i = 0; i < edgesToRemove.length; i++)
+        {
+            if(DEBUG)
+                System.out.println(edgesToRemove[i][0] + " - " + edgesToRemove[i][1]);
+            operations.add(removeEdge(forest, edgesToRemove[i][0], edgesToRemove[i][1]));
+
+            if(edgesToRemove[i][0] < 0){operations.add(suppressDeg2Vertex(forest, edgesToRemove[i][0]));}
+            if(edgesToRemove[i][1] < 0){operations.add(suppressDeg2Vertex(forest, edgesToRemove[i][1]));}
+        }
+        k -= edgesToRemove.length;
+
+        if(k<0){
+            reverseOperations(operations);
+            return false;
+        }
+        int operationNum;
+        do
+        {
+            operationNum = operations.size();
+            //handle singletons
+            operations.addAll(removeSingletons(tree, forest));
+
+            if(DEBUG && k==0 ){System.out.println(tree.size() + " : " + forest.size() + "   " + tree.getTree().keySet() + forest.getTree().keySet());}
+
+            //reduce cherries
+            operations.addAll(reduceCommonCherries(tree, forest));
+        }
+        while(operationNum != operations.size());
+
+        //TODO: if |Rt| <= 2 return true;
+        if(tree.size() <= 2)
+            return true;
+        //if there is a node r in Rt that is a root in Fdot2 remove r from Rt and add to Rd
+        
+        //find sibling pair in T1
+        int[] ab = findCherry(tree);
+        int a = ab[0];
+        int b = ab[1];
+        if(DEBUG){
+            System.out.println("[" + ab[0] + ", " + ab[1] + "]");
+            System.out.println(forest);
+        }
         List<Integer> path = findPath(forest, a, b);
-        
-        if(path == null)//no path within forest
-        {
-            //find edges to cherry
-            List<Edge> edgesA = forest.getNode(a);
-            List<Edge> edgesB = forest.getNode(b);
-            //since a and b are leaves both lists should be of size 1
-            if(MAF(tree, forest,new int[][]{{a,edgesA.get(0).getVertex()}},k))
-                return true;
 
-            if(MAF(tree, forest,new int[][]{{a,edgesB.get(0).getVertex()}},k))
-                return true;
-        }
-        else
+        // find edges to cherry
+        // I initially accessed only the edge list 
+        // but due to some weird bug, after the recursive calls these variables
+        // would be null and crash the program.
+        // I do not know what caused this but this might fix the symptoms
+        int parentA = forest.getNode(a).get(0).getVertex();
+        int parentB = forest.getNode(b).get(0).getVertex();
+        
+        //since a and b are leaves both lists should be of size 1
+        if(MAF(tree, forest,new int[][]{{a,parentA}},k))
+            return true;
+
+        if(MAF(tree, forest,new int[][]{{b,parentB}},k))
+            return true;
+
+        if(path != null)//there is a path within forest
         {
             //get pendant nodes
             //you know the nodes and the two connections so we just have to find the third unkown node to get the pendant node
-            List<int[]> pendant = new ArrayList<>();
-            for(int i = 0; i < path.size();i++)
+            List<int[]> pendant = getPendantNodes(forest, path);
+
+            for(int i = 0; i < pendant.size();i++)
             {
-                int label = path.get(i);
-                if(label > 0){continue;}
-                int other = path.get(i - 1);
-                int other2 = path.get(i + 1);
-                
-                for(Edge e : forest.getNode(label))
+                int[][] edges = new int[pendant.size()-1][2];
+                int index = 0;
+                for(int l = 0; l < pendant.size();l++)
                 {
-                    if(e.getVertex() == other || e.getVertex() == other2)
-                    {
-                        continue;
-                    }
-                    pendant.add(new int[]{label,e.getVertex()});
+                    if(l == i) continue;
+                    edges[index++] = pendant.get(l);
                 }
-            }
-            //recursive call
-            if(pendant.size() == 1)
-            {
-                if(MAF(tree, forest,new int[][]{pendant.get(0)},k))
-                    return true;
-            }else
-            {
-                List<Edge> edgesA = forest.getNode(a);
-                List<Edge> edgesB = forest.getNode(b);
-                //use cheap recursive call first 
-                if(MAF(tree, forest,new int[][]{{a,edgesA.get(0).getVertex()}},k))
-                    return true;
-
-                if(MAF(tree, forest,new int[][]{{a,edgesB.get(0).getVertex()}},k))
-                    return true;
-
-                if(MAF(tree, forest,(int[][])pendant.toArray(),k))
+                if(MAF(tree, forest,edges,k))
                     return true;
             }
+            
         }
 
-        //TODO: revert degree 2 vertex supression
+        //revert edits to trees
+        reverseOperations(operations);
 
-        //add back the edges we just removed from previous recursive call
-        for(int i = 0; i < edgeRemoval.length; i++)
-        {
-            forest.addEdge(edgeRemoval[i][0], edgeRemoval[i][1]);
-        }
-        k += edgeRemoval.length;//probably not neccecary due to pass by value
+        k += edgesToRemove.length;
 
         return false;
     }
 
-    //find path from a to b
+    public List<Operation> removeSingletons(Tree tree, Tree forest)
+    {
+        List<Operation> operations = new ArrayList<>();
+        List<Integer> toRemove = new ArrayList<>();
+
+        for(int v : forest.getTree().keySet())
+        {
+            if(v < 0){continue;}//dont have to check internal nodes
+            if(forest.getNode(v).size() == 0)
+            {
+                toRemove.add(v);
+            }
+            
+        }
+
+        for(int v : toRemove)
+        {
+            if(tree.getNode(v).size() == 0)//found singleton in tree too
+            {
+                tree.removeNode(v);
+                forest.removeNode(v);
+                operations.add(new NodeRemovalOperation(tree, forest, v, false, -1));
+            }
+            else
+            {
+                forest.removeNode(v);
+                int parent = tree.removeNode(v).get(0).getVertex();
+                if(parent > 0)
+                {
+                    operations.add(new NodeRemovalOperation(tree, forest, v, true, parent));
+
+                }else
+                {
+                    VertexSupressOperation vso = suppressDeg2Vertex(tree, parent);
+                    operations.add(new SingletonDisconnectOperation(tree, forest, vso, v));
+                     
+                }
+            }
+        }
+        return operations;
+    }
+
+    public List<Operation> reduceCommonCherries(Tree tree1, Tree tree2)
+    {
+        // System.out.println(tree1.size() + " : " + tree2.size() + "   " + tree1.getTree().keySet() + tree2.getTree().keySet());
+
+        Set<Integer> toRemove = new HashSet<>();
+        List<Operation> operations = new ArrayList<>();
+        
+        for(int a : tree1.getTree().keySet())
+        {
+            if(a < 0){continue;}
+            if(tree1.getNode(a).size() == 0){continue;}//a is a singleton
+            int b = findCherryFromNode(tree1, a);
+            if(b < a){continue;}// to prevent finding cherries twice only find the cherry from the lowest label value
+
+            //cherry found, check with other tree
+            if(checkCherry(a, b, tree2))
+            {
+                if(!toRemove.contains(b))
+                    toRemove.add(b);
+            }
+        }
+        
+        for(int v : toRemove)
+        {
+            // System.out.println(v);
+            // System.out.println(tree2.getNode(v));
+            operations.add(removeCommonCherry(tree1,tree2,v));
+        }
+        
+        if(!toRemove.isEmpty()){
+            operations.addAll(reduceCommonCherries(tree1, tree2));
+        }
+        
+        return operations;
+    }
+    
+    public int findCherryFromNode(Tree tree, int a)
+    {
+        int v = tree.getNode(a).get(0).getVertex();
+        if(v > 0){return v;}//a--b cherry
+        for(Edge e : tree.getNode(v))
+        {
+            int b = e.getVertex();
+            if(b > 0 && b != a)
+                return b;
+        }
+        return -1;
+    }
+
+    //check for cherry
+    public boolean checkCherry(int a, int b, Tree tree)
+    {
+        if(tree.getNode(a).size() == 0 || tree.getNode(b).size() == 0){return false;}
+        int v1 = tree.getNode(a).get(0).getVertex();
+        int v2 = tree.getNode(b).get(0).getVertex();
+        return v1 == v2 || v1 == b;//also find a--b cherries
+        
+    }
+
+    public List<int[]> getPendantNodes(Tree forest, List<Integer> path)
+    {
+        List<int[]> pendant = new ArrayList<>();
+        if(DEBUG){
+            System.out.println(path);
+            System.out.println(forest);
+            forest.printDeg();
+        }
+        for(int i = 0; i < path.size();i++)
+        {
+            int label = path.get(i);
+            if(label > 0){continue;}
+            int other = path.get(i - 1);
+            int other2 = path.get(i + 1);
+            if(DEBUG)
+                System.out.println(label);
+            
+            for(Edge e : forest.getNode(label))
+            {
+                if(e.getVertex() == other || e.getVertex() == other2)
+                {
+                    continue;
+                }
+                pendant.add(new int[]{label,e.getVertex()});
+            }
+        }
+        return pendant;
+    }
+
+    public int[] findCherry(Tree tree)
+    {
+        for(int v : tree.getTree().keySet())
+        {
+            if(v > 0) 
+                continue;
+            
+            List<Edge> edges = tree.getNode(v);
+            int[] leaves= new int[3];
+            int leafCount = 0;
+            for(Edge e : edges)
+            {
+                if(e.getVertex() > 0){leaves[leafCount++] = e.getVertex();}
+            }
+
+            if(leafCount >= 2)
+            {
+                return new int[]{leaves[0],leaves[1]};
+            }
+        }
+
+        return null;
+    }
+
+    
     public List<Integer> findPath(Tree tree, int a, int b)
     {
         List<Integer> path = new ArrayList<>();
@@ -221,5 +513,14 @@ public class TreeOperations {
             }
         }
         return false;
+    }
+
+    private void reverseOperations(List<Operation> operations)
+    {
+        Collections.reverse(operations);
+        for(Operation op : operations)
+        {
+            op.revert();
+        }
     }
 }
