@@ -5,6 +5,7 @@ import code.TreeOperations.Operation;
 public class Main {
 
     public static int a,b,c;
+    public static double t,t2;
     public static void main(String[] args) {
         // testPathFinding();
         boolean DEBUG = false;
@@ -97,29 +98,45 @@ public class Main {
     {
         TreeOperations to = new TreeOperations();
         int count = 0;
-
+        t = 0;
+        t2 = 0;
         // System.out.println(trees[0]);
         int min = Integer.MAX_VALUE;
         //for(int i = 0;i < n;i++)
         long startTime = System.nanoTime();
         long endTime = startTime;
+
+
+        Parser l = new Parser(path);
+        Tree[] trees  = l.parse();
+
+        to.reduceCommonCherries(trees[0], trees[1]);
+        to.suppressDeg2Vertex(trees[0], -2);
+        to.suppressDeg2Vertex(trees[1], -2);
         // for(int i =0; i < n; i++)
         while(endTime - startTime < 60e9)
         {
-            count++;
-            Parser l = new Parser(path);
-            Tree[] trees  = l.parse();
-            to.reduceCommonCherries(trees[0], trees[1]);
-            to.suppressDeg2Vertex(trees[0], -2);
-            to.suppressDeg2Vertex(trees[1], -2);
+            long startTime2 = System.nanoTime();
 
-            int result = to.MCTBR(trees[0], trees[1], new int[0][0], 0);
+            count++;
+            Tree tree = trees[0].copy();
+            Tree forest = trees[1].copy();
+            
+            long endTime2 = System.nanoTime();
+            double total = endTime2 - startTime2;
+            total /= 1.0e9;
+            Main.t2 += total;
+            
+
+            //TODO:make copying the tree after reduction possible to skip parsing
+
+            int result = to.MCTBR(tree, forest, new int[0][0], 0);
             if(result < min)
                 min = result;
             
             endTime =  System.nanoTime();
         }
-        System.out.println("k=" + min + ", " + count);
+        System.out.println("k=" + min + ", count=" + count + ", t=" + t + ", t2=" + t2);
     }
     public static void runOne(String path)
     {

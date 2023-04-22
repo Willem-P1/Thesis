@@ -251,8 +251,8 @@ public class TreeOperations {
             if(edgesToRemove[i][1] < 0){suppressDeg2Vertex(forest, edgesToRemove[i][1]);}
         }
         k += edgesToRemove.length;
-
         int treeSize;
+        long startTime = System.nanoTime();
         do
         {
             treeSize = tree.size();
@@ -263,7 +263,10 @@ public class TreeOperations {
             reduceCommonCherries(tree, forest);
         }
         while(treeSize != tree.size());//if size of the tree changed check again
-
+        long endTime = System.nanoTime();
+        double total = endTime - startTime;
+        total /= 1.0e9;
+        Main.t += total;
         //TODO: if |Rt| <= 2 return true;
         if(tree.size() <= 2)
             return k;
@@ -277,8 +280,10 @@ public class TreeOperations {
             System.out.println("[" + ab[0] + ", " + ab[1] + "]");
             System.out.println(forest);
         }
+
         List<Integer> path = findPath(forest, a, b);
 
+        
         // find edges to cherry
         // I initially accessed only the edge list 
         // but due to some weird bug, after the recursive calls these variables
@@ -296,12 +301,12 @@ public class TreeOperations {
 
         //since a and b are leaves both lists should be of size 1
         if(r <= 0.333333){
-            Main.a++;
+            // Main.a++;
             return MCTBR(tree, forest,new int[][]{{a,parentA}},k);
         }
 
         if(r <= 0.666666){
-            Main.b++;
+            // Main.b++;
             return MCTBR(tree, forest,new int[][]{{b,parentB}},k);
         }
             
@@ -318,7 +323,9 @@ public class TreeOperations {
             if(l == i) continue;
             edges[index++] = pendant.get(l);
         }
-        Main.c++;
+
+        
+        // Main.c++;
         return MCTBR(tree, forest,edges,k);
     }    
 
@@ -483,14 +490,12 @@ public class TreeOperations {
         
         for(int v : toRemove)
         {
-            // System.out.println(v);
-            // System.out.println(tree2.getNode(v));
             operations.add(removeCommonCherry(tree1,tree2,v));
         }
         
-        if(!toRemove.isEmpty()){
-            operations.addAll(reduceCommonCherries(tree1, tree2));
-        }
+        // if(!toRemove.isEmpty()){
+        //     operations.addAll(reduceCommonCherries(tree1, tree2));
+        // }
         
         return operations;
     }

@@ -14,21 +14,15 @@ public class debug {
         tree.addEdge(1, -1);
         tree.addEdge(2, -1);
 
+        // TreeOperations to = new TreeOperations();
+        System.out.println(tree);
 
 
-        forest.addNode(1);
-        forest.addNode(42);
-        forest.addNode(2);
-        forest.addEdge(1, 42);
-
-        TreeOperations to = new TreeOperations();
-        tree.printDeg();
-        forest.printDeg();
-
-        to.reduceCommonCherries(tree, forest);
+        // to.reduceCommonCherries(tree, forest);
         
-        tree.printDeg();
-        forest.printDeg();
+        Tree copy = tree.copy();
+
+        System.out.println(copy);
 
     }
 }
