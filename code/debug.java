@@ -4,7 +4,6 @@ public class debug {
     public static void main(String[] args) {
         // [1, 42, 47, -49][1, -4, 42, 47]
         Tree tree = new Tree();
-        Tree forest = new Tree();
 
         tree.addNode(1);
         tree.addNode(42);
