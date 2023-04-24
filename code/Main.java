@@ -45,10 +45,10 @@ public class Main {
     }
     public static void runAllRandom(int n)
     {
-        String path = "D:\\UM\\Thesis\\Thesis\\kernelizing-agreement-forests-main\\code\\maindataset\\";
-        // String path = "D:\\UM\\Thesis\\Thesis\\kernelizing-agreement-forests-main\\code\\largetreedataset\\";
-        String[] xNum = {"50", "150", "250", "350"};//"50","100", "150","200", "250", "300", "350",
-        String[] tbr = {"30","35"};//,"15","20, "30","};
+        // String path = "kernelizing-agreement-forests-main\\code\\maindataset\\";
+        String path = "kernelizing-agreement-forests-main\\code\\largetreedataset\\";
+        String[] xNum = {"500", "1000", "1500", "2000", "2500", "3000"};//"50","100", "150","200", "250", "300", "350",
+        String[] tbr = {"35"};//,"15","20, "30","};
         String[] skew = {"50","70","90"};
         String[] id = {"01","02","03","04", "05"};
 
