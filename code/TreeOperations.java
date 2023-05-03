@@ -236,6 +236,141 @@ public class TreeOperations {
         return new EdgeRemovalOperation(tree,a,b);
     }
 
+    public int MCTSTBR(Tree tree, Tree forest, int[][] edgesToRemove, int k, double maxTime)
+    {
+        //remove edges
+        if(DEBUG)
+            System.out.println("Edges to remove:");
+        for(int i = 0; i < edgesToRemove.length; i++)
+        {
+            if(DEBUG)
+                System.out.println(edgesToRemove[i][0] + " - " + edgesToRemove[i][1]);
+            removeEdge(forest, edgesToRemove[i][0], edgesToRemove[i][1]);
+
+            if(edgesToRemove[i][0] < 0){suppressDeg2Vertex(forest, edgesToRemove[i][0]);}
+            if(edgesToRemove[i][1] < 0){suppressDeg2Vertex(forest, edgesToRemove[i][1]);}
+        }
+        k += edgesToRemove.length;
+        int treeSize;
+        do
+        {
+            treeSize = tree.size();
+            //handle singletons
+            removeSingletons(tree, forest);
+
+            //reduce cherries
+            reduceCommonCherries(tree, forest);
+        }
+        while(treeSize != tree.size());//if size of the tree changed check again
+
+        if(tree.size() <= 2)
+            return k;
+        
+        //find sibling pair in T1
+        int[] ab = findCherry(tree);
+        int a = ab[0];
+        int b = ab[1];
+        if(DEBUG){
+            System.out.println("[" + ab[0] + ", " + ab[1] + "]");
+            System.out.println(forest);
+        }
+
+        List<Integer> path = findPath(forest, a, b);
+
+        
+        // find edges to cherry
+        // I initially accessed only the edge list 
+        // but due to some weird bug, after the recursive calls these variables
+        // would be null and crash the program.
+        // I do not know what caused this but this fixes the symptoms
+        int parentA = forest.getNode(a).get(0).getVertex();
+        int parentB = forest.getNode(b).get(0).getVertex();
+        
+        int[][] bestEdges = new int[][]{{a,parentA}};
+        int bestK = evaluateEdges(tree, forest, bestEdges, k,maxTime);
+        
+        if(evaluateEdges(tree, forest, new int[][]{{b,parentB}}, k, maxTime) < bestK){
+            bestEdges = new int[][]{{b,parentB}};
+        }
+        
+        if(path == null)//there is a path within forest
+            return MCTSTBR(tree, forest, bestEdges,k, maxTime);
+
+        
+        //get pendant nodes
+        //you know the nodes and the two connections so we just have to find the third unkown node to get the pendant node
+        List<int[]> pendant = getPendantNodes(forest, path);
+
+        for(int i = 0; i < pendant.size();i++)
+        {
+            int[][] edges = new int[pendant.size()-1][2];
+            int index = 0;
+            for(int l = 0; l < pendant.size();l++)
+            {
+                if(l == i) continue;
+                edges[index++] = pendant.get(l);
+            }
+            if(evaluateEdges(tree, forest, edges, k, maxTime) < bestK){
+                bestEdges = edges;
+            }
+        }
+
+        
+        return MCTSTBR(tree, forest,bestEdges,k, maxTime);
+    }
+
+    private int evaluateEdges(Tree tree, Tree forest, int[][] edgesToRemove, int k, double maxTime) {
+        Main.a++;
+        List<Operation> operations = new ArrayList<>();
+
+        for(int i = 0; i < edgesToRemove.length; i++)
+        {
+            if(DEBUG)
+                System.out.println(edgesToRemove[i][0] + " - " + edgesToRemove[i][1]);
+            operations.add(removeEdge(forest, edgesToRemove[i][0], edgesToRemove[i][1]));
+
+            if(edgesToRemove[i][0] < 0){operations.add(suppressDeg2Vertex(forest, edgesToRemove[i][0]));}
+            if(edgesToRemove[i][1] < 0){operations.add(suppressDeg2Vertex(forest, edgesToRemove[i][1]));}
+        }
+        k += edgesToRemove.length;
+        
+        int operationNum;
+        do
+        {
+            operationNum = operations.size();
+            //handle singletons
+            operations.addAll(removeSingletons(tree, forest));
+            //reduce cherries
+            operations.addAll(reduceCommonCherries(tree, forest));
+        }
+        while(operationNum != operations.size());
+        
+        
+        int min = Integer.MAX_VALUE;
+        long startTime = System.nanoTime();
+        long endTime = startTime;
+        while(endTime - startTime < maxTime)
+        {
+            long startTime2 = System.nanoTime();
+
+            Tree T = tree.copy();
+            Tree F = forest.copy();
+            
+            long endTime2 = System.nanoTime();
+            double total = endTime2 - startTime2;
+            total /= 1.0e9;
+            Main.t2 += total;
+            
+            int result = MCTBR(T, F, new int[0][0], k);
+            min = Math.min(min, result);
+            
+            endTime =  System.nanoTime();
+        }
+
+        reverseOperations(operations);
+        return min;
+    }
+
     public int MCTBR(Tree tree, Tree forest, int[][] edgesToRemove, int k)
     {
         //remove edges

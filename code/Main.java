@@ -11,12 +11,14 @@ public class Main {
         boolean DEBUG = false;
         boolean testAll = false;
         boolean useRandom = false;
+        boolean useMCTS = false;
         int n = 20;//default n value
         for(String s : args)
         {
             if(s.equals("-d")){DEBUG = true;}
             else if(s.equals("-r")){useRandom = true;}
             else if(s.equals("-a")){testAll = true;}
+            else if(s.equals("-mcts")){useMCTS = true;}
         }
         Parser l;
         if(DEBUG){
@@ -29,7 +31,14 @@ public class Main {
                 }else{
                     runOneRandom(args[0],n);
                 }
-            }else
+            }else if(useMCTS)
+            {
+                if(testAll){
+                    runAllMCTS();
+                }else{
+                    runOneMCTS(args[0]);
+                }
+            }
             {
                 if(testAll){
                     runAll();
@@ -42,6 +51,32 @@ public class Main {
         System.out.println(a + ", " + b + ", " + c);
         // System.out.println("after MAF");
         // System.out.println(trees[0]);
+    }
+    public static void runAllMCTS()
+    {
+        // String path = "kernelizing-agreement-forests-main\\code\\maindataset\\";
+        String path = "kernelizing-agreement-forests-main\\code\\largetreedataset\\";
+        String[] xNum = {"500", "1000", "1500", "2000", "2500", "3000"};//"50","100", "150","200", "250", "300", "350",
+        String[] tbr = {"35"};//,"15","20, "30","};
+        String[] skew = {"50","70","90"};
+        String[] id = {"01","02","03","04", "05"};
+
+        for(String x : xNum)
+        {
+            for(String t : tbr)
+            {
+                for(String s : skew)
+                {
+                    for(String i : id)
+                    {
+                        List<String> list = Arrays.asList("TREEPAIR",x,t,s,i);
+                        String name = String.join("_", list);
+                        System.out.print(name + ", ");
+                        runOneMCTS(path + name + ".tree");
+                    }
+                }
+            }
+        }
     }
     public static void runAllRandom(int n)
     {
@@ -94,8 +129,27 @@ public class Main {
             }
         }
     }
+
+    public static void runOneMCTS(String path)
+    {
+        Parser l = new Parser(path);
+        Tree[] trees  = l.parse();
+        TreeOperations to = new TreeOperations();
+        to.reduceCommonCherries(trees[0], trees[1]);
+        to.suppressDeg2Vertex(trees[0], -2);
+        to.suppressDeg2Vertex(trees[1], -2);
+        // System.out.println(trees[0]);
+        long startTime = System.nanoTime();
+        int result = to.MCTSTBR(trees[0], trees[1], new int[0][0], 0,0.25e9);
+        long endTime = System.nanoTime();
+        double time = endTime - startTime;
+        time /= 1e9;
+        System.out.println("k=" + result + ", t=" + time);
+    }
+
     public static void runOneRandom(String path, int n)
     {
+        boolean size = false;
         TreeOperations to = new TreeOperations();
         int count = 0;
         t = 0;
@@ -113,6 +167,11 @@ public class Main {
         to.reduceCommonCherries(trees[0], trees[1]);
         to.suppressDeg2Vertex(trees[0], -2);
         to.suppressDeg2Vertex(trees[1], -2);
+        if(size){
+            System.out.println(trees[0].size());
+            return;
+        }
+        
         // for(int i =0; i < n; i++)
         while(endTime - startTime < 60e9)
         {
@@ -131,6 +190,7 @@ public class Main {
             //TODO:make copying the tree after reduction possible to skip parsing
 
             int result = to.MCTBR(tree, forest, new int[0][0], 0);
+            System.out.println(result);
             if(result < min)
                 min = result;
             
