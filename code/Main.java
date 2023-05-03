@@ -140,7 +140,7 @@ public class Main {
         to.suppressDeg2Vertex(trees[1], -2);
         // System.out.println(trees[0]);
         long startTime = System.nanoTime();
-        int result = to.MCTSTBR(trees[0], trees[1], new int[0][0], 0,0.25e9);
+        int result = to.MCTSTBR(trees[0], trees[1], new int[0][0], 0,0.5e9);
         long endTime = System.nanoTime();
         double time = endTime - startTime;
         time /= 1e9;
