@@ -319,6 +319,100 @@ public class TreeOperations {
         return MCTSTBR(tree, forest,bestEdges,k, maxTime);
     }
 
+    public int applyOperation(Tree tree, Tree forest, int k, int op)
+    {
+        //remove edges
+        if(DEBUG)
+            System.out.println("Edges to remove:");
+
+        int[][] edgesToRemove = new int[0][0];
+        int opNum = 0;
+        
+        int[] ab = findCherry(tree);
+        int a = ab[0];
+        int b = ab[1];
+        if(DEBUG){
+            System.out.println("[" + ab[0] + ", " + ab[1] + "]");
+            System.out.println(forest);
+        }
+
+        List<Integer> path = findPath(forest, a, b);
+
+        // find edges to cherry
+        // I initially accessed only the edge list 
+        // but due to some weird bug, after the recursive calls these variables
+        // would be null and crash the program.
+        // I do not know what caused this but this might fix the symptoms
+        int parentA = forest.getNode(a).get(0).getVertex();
+        int parentB = forest.getNode(b).get(0).getVertex();
+        
+        Random random = new Random();
+        double r = random.nextDouble();
+
+        if(path == null)//there is a path within forest
+            r *= 0.666666;//limit to just the two options
+
+
+        //since a and b are leaves both lists should be of size 1
+        if(opNum == op)
+            edgesToRemove = new int[][]{{a,parentA}};
+        opNum++;            
+
+        if(opNum == op)
+            edgesToRemove = new int[][]{{b,parentB}};
+        opNum++;            
+
+        
+        //get pendant nodes
+        //you know the nodes and the two connections so we just have to find the third unkown node to get the pendant node
+        List<int[]> pendant = getPendantNodes(forest, path);
+
+        for(int i = 0; i < pendant.size();i++)
+        {
+            if(opNum != op)
+            {
+                continue;
+            }
+            int[][] edges = new int[pendant.size()-1][2];
+            int index = 0;
+            
+            for(int l = 0; l < pendant.size();l++)
+            {
+                if(l == i) continue;
+                edges[index++] = pendant.get(l);
+            }
+
+            edgesToRemove = edges;
+            break;
+        }
+
+        for(int i = 0; i < edgesToRemove.length; i++)
+        {
+            if(DEBUG)
+                System.out.println(edgesToRemove[i][0] + " - " + edgesToRemove[i][1]);
+            removeEdge(forest, edgesToRemove[i][0], edgesToRemove[i][1]);
+
+            if(edgesToRemove[i][0] < 0){suppressDeg2Vertex(forest, edgesToRemove[i][0]);}
+            if(edgesToRemove[i][1] < 0){suppressDeg2Vertex(forest, edgesToRemove[i][1]);}
+        }
+
+        k += edgesToRemove.length;
+        
+        int treeSize;
+        do
+        {
+            treeSize = tree.size();
+            //handle singletons
+            removeSingletons(tree, forest);
+
+            //reduce cherries
+            reduceCommonCherries(tree, forest);
+        }
+        while(treeSize != tree.size());//if size of the tree changed check again
+        // Main.c++;
+        return k;
+    }
+
     private int evaluateEdges(Tree tree, Tree forest, int[][] edgesToRemove, int k, double maxTime) {
         Main.a++;
         List<Operation> operations = new ArrayList<>();
