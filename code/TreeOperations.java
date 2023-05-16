@@ -319,6 +319,8 @@ public class TreeOperations {
         return MCTSTBR(tree, forest,bestEdges,k, maxTime);
     }
 
+    
+
     private int evaluateEdges(Tree tree, Tree forest, int[][] edgesToRemove, int k, double maxTime) {
         Main.a++;
         List<Operation> operations = new ArrayList<>();
@@ -559,6 +561,76 @@ public class TreeOperations {
         return false;
     }
 
+    public int doOp(Tree tree, Tree forest, int move, int k, List<Operation> operations)
+    {
+        int moveNum = 0;
+        int[][] edgesToRemove = new int[0][0];
+        
+        int[] ab = findCherry(tree);
+        int a = ab[0];
+        int b = ab[1];
+        if(DEBUG){
+            System.out.println("[" + ab[0] + ", " + ab[1] + "]");
+            System.out.println(forest);
+        }
+        List<Integer> path = findPath(forest, a, b);
+
+        // find edges to cherry
+        // I initially accessed only the edge list 
+        // but due to some weird bug, after the recursive calls these variables
+        // would be null and crash the program.
+        // I do not know what caused this but this might fix the symptoms
+        int parentA = forest.getNode(a).get(0).getVertex();
+        int parentB = forest.getNode(b).get(0).getVertex();
+
+        if(moveNum == move){edgesToRemove = new int[][]{{a,parentA}};}
+        moveNum++;
+
+        if(moveNum == move){edgesToRemove = new int[][]{{b,parentB}};}
+        moveNum++;
+
+        List<int[]> pendant = getPendantNodes(forest, path);
+
+        
+        for(int i = 0; i < pendant.size();i++)
+        {
+            if(moveNum != move){moveNum++; continue;}
+            int[][] edges = new int[pendant.size()-1][2];
+            int index = 0;
+            for(int l = 0; l < pendant.size();l++)
+            {
+                if(l == i) continue;
+                edges[index++] = pendant.get(l);
+            }
+            edgesToRemove = edges;
+            break;
+        }
+
+        for(int i = 0; i < edgesToRemove.length; i++)
+        {
+            if(DEBUG)
+                System.out.println(edgesToRemove[i][0] + " - " + edgesToRemove[i][1]);
+            operations.add(removeEdge(forest, edgesToRemove[i][0], edgesToRemove[i][1]));
+
+            if(edgesToRemove[i][0] < 0){operations.add(suppressDeg2Vertex(forest, edgesToRemove[i][0]));}
+            if(edgesToRemove[i][1] < 0){operations.add(suppressDeg2Vertex(forest, edgesToRemove[i][1]));}
+        }
+        k += edgesToRemove.length;
+
+        int operationNum;
+        do
+        {
+            operationNum = operations.size();
+            //handle singletons
+            operations.addAll(removeSingletons(tree, forest));
+            //reduce cherries
+            operations.addAll(reduceCommonCherries(tree, forest));
+        }
+        while(operationNum != operations.size());
+
+        return k;
+    }
+
     public List<Operation> removeSingletons(Tree tree, Tree forest)
     {
         List<Operation> operations = new ArrayList<>();
@@ -741,7 +813,7 @@ public class TreeOperations {
         return false;
     }
 
-    private void reverseOperations(List<Operation> operations)
+    public void reverseOperations(List<Operation> operations)
     {
         Collections.reverse(operations);
         for(Operation op : operations)

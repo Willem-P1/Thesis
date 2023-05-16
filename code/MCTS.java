@@ -1,6 +1,7 @@
 package code;
 
 import java.util.*;
+import code.TreeOperations.Operation;
 
 public class MCTS {
     final float c = 1.41f;
@@ -26,32 +27,40 @@ public class MCTS {
         long startTime = System.nanoTime();
         long endTime = startTime;
         while((endTime - startTime) < t * 1e9){
-            Node leaf = traverse(root);
+            List<Operation> operations = new ArrayList<>();
+            int k = 0;
+            Node leaf = traverse(root, k, operations);
+            
+            //run simulation for all new children
             int res = rollout(leaf);
+
             backpropagate(leaf, res);
+            to.reverseOperations(operations);
             endTime = System.nanoTime();
         }
         return best_child(root);
     }
  
     // function for node traversal
-    public Node traverse(Node node){
+    public Node traverse(Node node, int k, List<Operation> operations){
         while(node.children.size() > 0){
-            node = best_uct(node);
+            int index = best_uct(node);
+            node = node.children.get(index);
+            to.doOp(tree, forest, index, k, operations);
         }
         // in case no children are present / node is terminal
-        return pick_unvisited(node.children);
+        return node;
     }
 
-    public Node best_uct(Node node)
+    public int best_uct(Node node)
     {
-        Node max = null;
+        int max = -1;
         int best = -1;
         for(int i = 0;i < node.children.size();i++)
         {
             if(calcUct(node.children.get(i)) > best)
             {
-                max = node.children.get(i);
+                max = i;
                 best = node.children.get(i).visits;
             }
         }
@@ -67,17 +76,12 @@ public class MCTS {
 
     // function for the result of the simulation
     public int rollout(Node node){
-        while(node.children.size() > 0){
-            node = rollout_policy(node);
-        }
+        //TODO: create all children and stuffnstuff
         Tree T = tree.copy();
         Tree F = forest.copy();
         return to.MCTBR(T, F, new int[0][0], 0);
     }
-    // function for randomly selecting a child node
-    public void rollout_policy(Node node){
-        return pick_random(node.children);
-    }
+    
     // function for backpropagation
     public void backpropagate(Node node, int result){
         if (node.parent == null)
