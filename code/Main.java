@@ -23,6 +23,7 @@ public class Main {
         Parser l;
         if(DEBUG){
             if(useRandom){runOneRandom("code/test.txt",n);}
+            else if(useMCTS){runOneMCTS("code/test.txt");}
             else{runOne("code/test.txt");}
         }else{
             if(useRandom){
@@ -135,7 +136,7 @@ public class Main {
         Parser l = new Parser(path);
         Tree[] trees  = l.parse();
         TreeOperations to = new TreeOperations();
-        to.reduceCommonCherries(trees[0], trees[1]);
+        to.reduce(trees[0], trees[1]);
         to.suppressDeg2Vertex(trees[0], -2);
         to.suppressDeg2Vertex(trees[1], -2);
         // System.out.println(trees[0]);
@@ -164,7 +165,7 @@ public class Main {
         Parser l = new Parser(path);
         Tree[] trees  = l.parse();
 
-        to.reduceCommonCherries(trees[0], trees[1]);
+        to.reduce(trees[0], trees[1]);
         to.suppressDeg2Vertex(trees[0], -2);
         to.suppressDeg2Vertex(trees[1], -2);
         if(size){
@@ -190,7 +191,7 @@ public class Main {
             //TODO:make copying the tree after reduction possible to skip parsing
 
             int result = to.MCTBR(tree, forest, new int[0][0], 0);
-            System.out.println(result);
+            // System.out.println(result);
             if(result < min)
                 min = result;
             
@@ -203,7 +204,7 @@ public class Main {
         Parser l = new Parser(path);
         Tree[] trees  = l.parse();
         TreeOperations to = new TreeOperations();
-        to.reduceCommonCherries(trees[0], trees[1]);
+        to.reduce(trees[0], trees[1]);
         to.suppressDeg2Vertex(trees[0], -2);
         to.suppressDeg2Vertex(trees[1], -2);
         // System.out.println(trees[0]);

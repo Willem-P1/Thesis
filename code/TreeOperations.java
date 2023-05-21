@@ -251,17 +251,9 @@ public class TreeOperations {
             if(edgesToRemove[i][1] < 0){suppressDeg2Vertex(forest, edgesToRemove[i][1]);}
         }
         k += edgesToRemove.length;
-        int treeSize;
-        do
-        {
-            treeSize = tree.size();
-            //handle singletons
-            removeSingletons(tree, forest);
-
-            //reduce cherries
-            reduceCommonCherries(tree, forest);
-        }
-        while(treeSize != tree.size());//if size of the tree changed check again
+        
+        //reduce the tree
+        reduce(tree, forest);
 
         if(tree.size() <= 2)
             return k;
@@ -336,16 +328,7 @@ public class TreeOperations {
         }
         k += edgesToRemove.length;
         
-        int operationNum;
-        do
-        {
-            operationNum = operations.size();
-            //handle singletons
-            operations.addAll(removeSingletons(tree, forest));
-            //reduce cherries
-            operations.addAll(reduceCommonCherries(tree, forest));
-        }
-        while(operationNum != operations.size());
+        operations.addAll(reduce(tree, forest));
         
         
         int min = Integer.MAX_VALUE;
@@ -388,18 +371,9 @@ public class TreeOperations {
             if(edgesToRemove[i][1] < 0){suppressDeg2Vertex(forest, edgesToRemove[i][1]);}
         }
         k += edgesToRemove.length;
-        int treeSize;
         long startTime = System.nanoTime();
-        do
-        {
-            treeSize = tree.size();
-            //handle singletons
-            removeSingletons(tree, forest);
-
-            //reduce cherries
-            reduceCommonCherries(tree, forest);
-        }
-        while(treeSize != tree.size());//if size of the tree changed check again
+        //reduce tree
+        reduce(tree, forest);
         long endTime = System.nanoTime();
         double total = endTime - startTime;
         total /= 1.0e9;
@@ -488,19 +462,9 @@ public class TreeOperations {
             reverseOperations(operations);
             return false;
         }
-        int operationNum;
-        do
-        {
-            operationNum = operations.size();
-            //handle singletons
-            operations.addAll(removeSingletons(tree, forest));
-
-            if(DEBUG && k==0 ){System.out.println(tree.size() + " : " + forest.size() + "   " + tree.getTree().keySet() + forest.getTree().keySet());}
-
-            //reduce cherries
-            operations.addAll(reduceCommonCherries(tree, forest));
-        }
-        while(operationNum != operations.size());
+        
+        //reduce tree
+        operations.addAll(reduce(tree, forest));
 
         //TODO: if |Rt| <= 2 return true;
         if(tree.size() <= 2)
@@ -561,14 +525,34 @@ public class TreeOperations {
         return false;
     }
 
+    public List<Operation> reduce(Tree tree, Tree forest) {
+        List<Operation> operations = new ArrayList<>();
+        int operationNum;
+        do
+        {
+            operationNum = operations.size();
+            //handle singletons
+            operations.addAll(removeSingletons(tree, forest));
+            //reduce cherries
+            operations.addAll(reduceCommonCherries(tree, forest));
+        }
+        while(operationNum != operations.size());
+
+        return operations;
+    }
+
     public int doOp(Tree tree, Tree forest, int move, int k, List<Operation> operations)
     {
+        System.out.println(tree);
+        System.out.println("move: " + move);
         int moveNum = 0;
         int[][] edgesToRemove = new int[0][0];
         
         int[] ab = findCherry(tree);
         int a = ab[0];
         int b = ab[1];
+        System.out.println("[" + ab[0] + ", " + ab[1] + "]");
+
         if(DEBUG){
             System.out.println("[" + ab[0] + ", " + ab[1] + "]");
             System.out.println(forest);
@@ -591,7 +575,6 @@ public class TreeOperations {
 
         List<int[]> pendant = getPendantNodes(forest, path);
 
-        
         for(int i = 0; i < pendant.size();i++)
         {
             if(moveNum != move){moveNum++; continue;}
@@ -605,7 +588,7 @@ public class TreeOperations {
             edgesToRemove = edges;
             break;
         }
-
+        if(edgesToRemove.length == 0){System.out.println("Something went wrong performing operation on tree");}
         for(int i = 0; i < edgesToRemove.length; i++)
         {
             if(DEBUG)
@@ -617,16 +600,7 @@ public class TreeOperations {
         }
         k += edgesToRemove.length;
 
-        int operationNum;
-        do
-        {
-            operationNum = operations.size();
-            //handle singletons
-            operations.addAll(removeSingletons(tree, forest));
-            //reduce cherries
-            operations.addAll(reduceCommonCherries(tree, forest));
-        }
-        while(operationNum != operations.size());
+        operations.addAll(reduce(tree, forest));
 
         return k;
     }
