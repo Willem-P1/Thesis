@@ -543,15 +543,15 @@ public class TreeOperations {
 
     public int doOp(Tree tree, Tree forest, int move, int k, List<Operation> operations)
     {
-        System.out.println(tree);
-        System.out.println("move: " + move);
+        // System.out.println(tree);
+        // System.out.println("move: " + move);
         int moveNum = 0;
         int[][] edgesToRemove = new int[0][0];
         
         int[] ab = findCherry(tree);
         int a = ab[0];
         int b = ab[1];
-        System.out.println("[" + ab[0] + ", " + ab[1] + "]");
+        // System.out.println("[" + ab[0] + ", " + ab[1] + "]");
 
         if(DEBUG){
             System.out.println("[" + ab[0] + ", " + ab[1] + "]");
@@ -573,20 +573,22 @@ public class TreeOperations {
         if(moveNum == move){edgesToRemove = new int[][]{{b,parentB}};}
         moveNum++;
 
-        List<int[]> pendant = getPendantNodes(forest, path);
+        if(path != null){
+            List<int[]> pendant = getPendantNodes(forest, path);
 
-        for(int i = 0; i < pendant.size();i++)
-        {
-            if(moveNum != move){moveNum++; continue;}
-            int[][] edges = new int[pendant.size()-1][2];
-            int index = 0;
-            for(int l = 0; l < pendant.size();l++)
+            for(int i = 0; i < pendant.size();i++)
             {
-                if(l == i) continue;
-                edges[index++] = pendant.get(l);
+                if(moveNum != move){moveNum++; continue;}
+                int[][] edges = new int[pendant.size()-1][2];
+                int index = 0;
+                for(int l = 0; l < pendant.size();l++)
+                {
+                    if(l == i) continue;
+                    edges[index++] = pendant.get(l);
+                }
+                edgesToRemove = edges;
+                break;
             }
-            edgesToRemove = edges;
-            break;
         }
         if(edgesToRemove.length == 0){System.out.println("Something went wrong performing operation on tree");}
         for(int i = 0; i < edgesToRemove.length; i++)

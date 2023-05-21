@@ -26,7 +26,15 @@ public class MCTS {
         this.tree = tree;
         this.forest = forest;
         Node root = new Node();
-        return monte_carlo_tree_search(root, k, maxT);
+        while(tree.size() > 2)
+        {
+            int move = monte_carlo_tree_search(root, k, maxT);
+            root = root.children.get(move);
+            List<Operation> operations = new ArrayList<>();
+            System.out.println(move);
+            k = to.doOp(tree, forest, move, k, operations);
+        }
+        return k;
     }
 
     public int monte_carlo_tree_search(Node root, int startK, int t){
