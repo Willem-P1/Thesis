@@ -13,7 +13,15 @@ public class debug {
         to.suppressDeg2Vertex(trees[1], -2);
         
         MCTS mcts = new MCTS();
-        System.out.println(mcts.mctsMain(trees[0], trees[1],0,1));
+        List<Operation> operations = new ArrayList<>();
 
+        System.out.println(mcts.mctsMain(trees[0], trees[1],0,1));
+        // to.doOp(trees[0], trees[1], 1, 0, operations);
+        // to.doOp(trees[0], trees[1], 3, 0, operations);
+        // to.doOp(trees[0], trees[1], 3, 0, operations);
+        // to.doOp(trees[0], trees[1], 0, 0, operations);
+        // to.doOp(trees[0], trees[1], 0, 0, operations);
+        // to.doOp(trees[0], trees[1], 0, 0, operations);
+        // to.doOp(trees[0], trees[1], 0, 0, operations);
     }
 }

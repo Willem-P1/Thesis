@@ -4,7 +4,7 @@ import java.util.*;
 import code.TreeOperations.Operation;
 
 public class MCTS {
-    final float c = 1.41f;
+    final float c = 1.41f*10;
     TreeOperations to = new TreeOperations();
     private Tree tree;
     private Tree forest;
@@ -15,9 +15,10 @@ public class MCTS {
         List<Node> children;
         int visits;
         int score;
-
-        public Node(){
+        int move;
+        public Node(int move){
             children = new ArrayList<>();
+            this.move = move;
         }
     }
 
@@ -25,13 +26,16 @@ public class MCTS {
     {
         this.tree = tree;
         this.forest = forest;
-        Node root = new Node();
+        Node root = new Node(-1);
+        int count= 0;
         while(tree.size() > 2)
         {
+            System.out.println("Size: " + tree.size());
+
             int move = monte_carlo_tree_search(root, k, maxT);
             root = root.children.get(move);
             List<Operation> operations = new ArrayList<>();
-            System.out.println(move);
+            System.out.println("end of mcts exploration: " + move + ", " + count++);
             k = to.doOp(tree, forest, move, k, operations);
         }
         return k;
@@ -43,12 +47,15 @@ public class MCTS {
         while((endTime - startTime) < t * 1e9){
             List<Operation> operations = new ArrayList<>();
             k = startK;
+            // System.out.println("reset");
             Node leaf = traverse(root, operations);
             
             //run simulation for all new children
             rollout(leaf);
 
             to.reverseOperations(operations);
+            // System.out.println(forest.size());
+
             endTime = System.nanoTime();
         }
         return best_child(root);
@@ -58,7 +65,9 @@ public class MCTS {
     public Node traverse(Node node, List<Operation> operations){
         while(node.children.size() > 0){
             int index = best_uct(node);
+            // System.out.println("Problem here? " + node.children.size());
             node = node.children.get(index);
+            // System.out.println("node: " + node.move);
             to.doOp(tree, forest, index, k, operations);
         }
         // in case no children are present / node is terminal
@@ -67,17 +76,18 @@ public class MCTS {
 
     public int best_uct(Node node)
     {
-        int max = -1;
-        int best = -1;
+        int index = -1;
+        float best = -Float.MAX_VALUE;
         for(int i = 0;i < node.children.size();i++)
         {
-            if(calcUct(node.children.get(i)) > best)
+            float uct = calcUct(node.children.get(i));
+            if(uct > best)
             {
-                max = i;
-                best = node.children.get(i).visits;
+                index = i;
+                best = uct;
             }
         }
-        return max;
+        return index;
     }
 
     public float calcUct(Node node)
@@ -89,8 +99,13 @@ public class MCTS {
 
     // function for the result of the simulation
     public void rollout(Node node){
-        //TODO: create all children and stuffnstuff
-        if(tree.size() <= 2){return;}
+        //If its a terminal node, backpropagate immediately since it cannot be expanded
+        if(tree.size() <= 2)
+        {
+            backpropagate(node, k);
+            return;
+        }
+
         int[] ab = to.findCherry(tree);
         int a = ab[0];
         int b = ab[1];
@@ -98,11 +113,12 @@ public class MCTS {
 
         int parentA = forest.getNode(a).get(0).getVertex();
         int parentB = forest.getNode(b).get(0).getVertex();
-
-        createChildAndBackpropagate(node, new int[][]{{a,parentA}});
-
-        createChildAndBackpropagate(node, new int[][]{{b,parentB}});
-
+        int move = 0;
+        createChildAndBackpropagate(node, new int[][]{{a,parentA}}, move);
+        move++;
+        createChildAndBackpropagate(node, new int[][]{{b,parentB}}, move);
+        move++;
+        
         if(path == null){return;}//if path is null we do not need to chech the pendant nodes for the mcts tree
 
         List<int[]> pendant = to.getPendantNodes(forest, path);
@@ -116,11 +132,14 @@ public class MCTS {
                 if(l == i) continue;
                 edges[index++] = pendant.get(l);
             }
-            createChildAndBackpropagate(node, edges);
+            createChildAndBackpropagate(node, edges, move);
+            move++;
+
         }
+
     }
     
-    public void createChildAndBackpropagate(Node parent, int[][] edgesToRemove)
+    public void createChildAndBackpropagate(Node parent, int[][] edgesToRemove, int move)
     {
         List<Operation> operations = new ArrayList<>();
         for(int i = 0; i < edgesToRemove.length; i++)
@@ -137,7 +156,7 @@ public class MCTS {
         Tree T = tree.copy();
         Tree F = forest.copy();
         int res = to.MCTBR(T, F, new int[0][0], k);
-        Node node = new Node();
+        Node node = new Node(move);
         parent.children.add(node);
         node.parent = parent;
         backpropagate(node, res);
@@ -161,6 +180,7 @@ public class MCTS {
         int count = -1;
         for(int i = 0;i < node.children.size();i++)
         {
+            System.out.print((node.children.get(i).score/node.children.get(i).visits) + " ");
             if(node.children.get(i).visits > count)
             {
                 max = i;

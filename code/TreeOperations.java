@@ -491,11 +491,16 @@ public class TreeOperations {
         
         //since a and b are leaves both lists should be of size 1
         if(MAF(tree, forest,new int[][]{{a,parentA}},k))
+        {
+            System.out.println(0);
             return true;
+        }
 
         if(MAF(tree, forest,new int[][]{{b,parentB}},k))
+        {
+            System.out.println(1);
             return true;
-
+        }
         if(path != null)//there is a path within forest
         {
             //get pendant nodes
@@ -512,7 +517,10 @@ public class TreeOperations {
                     edges[index++] = pendant.get(l);
                 }
                 if(MAF(tree, forest,edges,k))
+                {
+                    System.out.println(2);
                     return true;
+                }
             }
             
         }
@@ -543,20 +551,15 @@ public class TreeOperations {
 
     public int doOp(Tree tree, Tree forest, int move, int k, List<Operation> operations)
     {
-        // System.out.println(tree);
+        // System.out.println(tree.size());
         // System.out.println("move: " + move);
+
         int moveNum = 0;
         int[][] edgesToRemove = new int[0][0];
         
         int[] ab = findCherry(tree);
         int a = ab[0];
         int b = ab[1];
-        // System.out.println("[" + ab[0] + ", " + ab[1] + "]");
-
-        if(DEBUG){
-            System.out.println("[" + ab[0] + ", " + ab[1] + "]");
-            System.out.println(forest);
-        }
         List<Integer> path = findPath(forest, a, b);
 
         // find edges to cherry
@@ -572,7 +575,8 @@ public class TreeOperations {
 
         if(moveNum == move){edgesToRemove = new int[][]{{b,parentB}};}
         moveNum++;
-
+        // System.out.println("[" + ab[0] + ", " + ab[1] + "]");
+        // System.out.println(path);
         if(path != null){
             List<int[]> pendant = getPendantNodes(forest, path);
 
@@ -593,8 +597,6 @@ public class TreeOperations {
         if(edgesToRemove.length == 0){System.out.println("Something went wrong performing operation on tree");}
         for(int i = 0; i < edgesToRemove.length; i++)
         {
-            if(DEBUG)
-                System.out.println(edgesToRemove[i][0] + " - " + edgesToRemove[i][1]);
             operations.add(removeEdge(forest, edgesToRemove[i][0], edgesToRemove[i][1]));
 
             if(edgesToRemove[i][0] < 0){operations.add(suppressDeg2Vertex(forest, edgesToRemove[i][0]));}
@@ -752,7 +754,8 @@ public class TreeOperations {
 
             if(leafCount >= 2)
             {
-                return new int[]{leaves[0],leaves[1]};
+                if(leaves[0] < leaves[1]){return new int[]{leaves[0],leaves[1]};}
+                else{return new int[]{leaves[1],leaves[0]};}
             }
         }
 
