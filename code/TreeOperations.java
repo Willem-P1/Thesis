@@ -603,7 +603,6 @@ public class TreeOperations {
             if(edgesToRemove[i][1] < 0){operations.add(suppressDeg2Vertex(forest, edgesToRemove[i][1]));}
         }
         k += edgesToRemove.length;
-
         operations.addAll(reduce(tree, forest));
 
         return k;

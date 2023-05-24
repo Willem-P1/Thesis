@@ -4,7 +4,7 @@ import java.util.*;
 import code.TreeOperations.Operation;
 
 public class MCTS {
-    final float c = 1.41f*10;
+    final float defaultC = 1.41f;
     TreeOperations to = new TreeOperations();
     private Tree tree;
     private Tree forest;
@@ -14,8 +14,9 @@ public class MCTS {
         Node parent;
         List<Node> children;
         int visits;
-        int score;
+        float score;
         int move;
+        float max;
         public Node(int move){
             children = new ArrayList<>();
             this.move = move;
@@ -30,12 +31,12 @@ public class MCTS {
         int count= 0;
         while(tree.size() > 2)
         {
-            System.out.println("Size: " + tree.size());
+            // System.out.println("Size: " + tree.size());
 
             int move = monte_carlo_tree_search(root, k, maxT);
             root = root.children.get(move);
             List<Operation> operations = new ArrayList<>();
-            System.out.println("end of mcts exploration: " + move + ", " + count++);
+            // System.out.println("end of mcts exploration: " + move + ", " + count++);
             k = to.doOp(tree, forest, move, k, operations);
         }
         return k;
@@ -68,7 +69,7 @@ public class MCTS {
             // System.out.println("Problem here? " + node.children.size());
             node = node.children.get(index);
             // System.out.println("node: " + node.move);
-            to.doOp(tree, forest, index, k, operations);
+            k = to.doOp(tree, forest, index, k, operations);
         }
         // in case no children are present / node is terminal
         return node;
@@ -78,9 +79,10 @@ public class MCTS {
     {
         int index = -1;
         float best = -Float.MAX_VALUE;
+        float c = node.score/node.visits;
         for(int i = 0;i < node.children.size();i++)
         {
-            float uct = calcUct(node.children.get(i));
+            float uct = calcUct(node.children.get(i), c);
             if(uct > best)
             {
                 index = i;
@@ -90,10 +92,10 @@ public class MCTS {
         return index;
     }
 
-    public float calcUct(Node node)
+    public float calcUct(Node node, float c)
     {
-        float uct = ((float)node.score)/node.visits;
-        uct += c * Math.sqrt(Math.log(node.parent.visits)/node.visits);
+        float uct = -node.score/node.visits;
+        uct += defaultC * c * Math.sqrt(Math.log(node.parent.visits)/node.visits);
         return uct;
     }
 
@@ -156,6 +158,8 @@ public class MCTS {
         Tree T = tree.copy();
         Tree F = forest.copy();
         int res = to.MCTBR(T, F, new int[0][0], k);
+        // if(res < 5)
+        //     System.out.println(res);
         Node node = new Node(move);
         parent.children.add(node);
         node.parent = parent;
@@ -168,6 +172,10 @@ public class MCTS {
     public void backpropagate(Node node, int result){
         node.visits++;
         node.score += result;
+        if(node.max < result)
+        {
+            node.max = result;
+        }
         if (node.parent == null)
             return;
         backpropagate(node.parent, result);
@@ -180,7 +188,8 @@ public class MCTS {
         int count = -1;
         for(int i = 0;i < node.children.size();i++)
         {
-            System.out.print((node.children.get(i).score/node.children.get(i).visits) + " ");
+            float avg = (node.children.get(i).score)/(node.children.get(i).visits);
+            // System.out.print(node.children.get(i).visits + " ");
             if(node.children.get(i).visits > count)
             {
                 max = i;

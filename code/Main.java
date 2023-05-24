@@ -20,7 +20,6 @@ public class Main {
             else if(s.equals("-a")){testAll = true;}
             else if(s.equals("-mcts")){useMCTS = true;}
         }
-        Parser l;
         if(DEBUG){
             if(useRandom){runOneRandom("code/test.txt",n);}
             else if(useMCTS){runOneMCTS("code/test.txt");}
@@ -55,10 +54,12 @@ public class Main {
     }
     public static void runAllMCTS()
     {
-        String path = "kernelizing-agreement-forests-main\\code\\maindataset\\";
-        // String path = "kernelizing-agreement-forests-main\\code\\largetreedataset\\";
-        String[] xNum = {"50", "150", "250", "350"};//"50","100", "150","200", "250", "300", "350",
-        String[] tbr = {"15","35"};//,"15","20, "30","};
+        // String path = "kernelizing-agreement-forests-main\\code\\maindataset\\";
+        String path = "kernelizing-agreement-forests-main\\code\\largetreedataset\\";
+        String[] xNum = {"500", "1000", "1500", "2000", "2500", "3000"};//"50","100", "150","200", "250", "300", "350",
+        // String[] xNum = {"50", "150", "250", "350"};//"50","100", "150","200", "250", "300", "350",
+        // String[] tbr = {"15","35"};//,"15","20, "30","};
+        String[] tbr = {"35"};//,"15","20, "30","};
         String[] skew = {"50","70","90"};
         String[] id = {"01","02","03","04", "05"};
 
@@ -140,8 +141,10 @@ public class Main {
         to.suppressDeg2Vertex(trees[0], -2);
         to.suppressDeg2Vertex(trees[1], -2);
         // System.out.println(trees[0]);
+        MCTS mcts = new MCTS();
         long startTime = System.nanoTime();
-        int result = to.MCTSTBR(trees[0], trees[1], new int[0][0], 0,0.5e9);
+        int result = mcts.mctsMain(trees[0], trees[1],0,1);
+        // int result = to.MCTSTBR(trees[0], trees[1], new int[0][0], 0,0.5e9);
         long endTime = System.nanoTime();
         double time = endTime - startTime;
         time /= 1e9;
@@ -186,9 +189,6 @@ public class Main {
             double total = endTime2 - startTime2;
             total /= 1.0e9;
             Main.t2 += total;
-            
-
-            //TODO:make copying the tree after reduction possible to skip parsing
 
             int result = to.MCTBR(tree, forest, new int[0][0], 0);
             // System.out.println(result);

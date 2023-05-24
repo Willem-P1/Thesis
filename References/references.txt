@@ -8,3 +8,5 @@ volume = {42},
 journal = {SIAM Journal on Computing},
 doi = {10.1137/110845045}
 }
+
+https://stackoverflow.com/questions/36664993/mcts-uct-with-a-scoring-system
