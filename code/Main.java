@@ -143,7 +143,7 @@ public class Main {
         // System.out.println(trees[0]);
         MCTS mcts = new MCTS();
         long startTime = System.nanoTime();
-        int result = mcts.mctsMain(trees[0], trees[1],0,1);
+        int result = mcts.mctsMain(trees[0], trees[1],0,10);
         // int result = to.MCTSTBR(trees[0], trees[1], new int[0][0], 0,0.5e9);
         long endTime = System.nanoTime();
         double time = endTime - startTime;

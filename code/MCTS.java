@@ -28,7 +28,6 @@ public class MCTS {
         this.tree = tree;
         this.forest = forest;
         Node root = new Node(-1);
-        int count= 0;
         while(tree.size() > 2)
         {
             // System.out.println("Size: " + tree.size());
@@ -36,7 +35,7 @@ public class MCTS {
             int move = monte_carlo_tree_search(root, k, maxT);
             root = root.children.get(move);
             List<Operation> operations = new ArrayList<>();
-            // System.out.println("end of mcts exploration: " + move + ", " + count++);
+            System.out.println("move: " + move);
             k = to.doOp(tree, forest, move, k, operations);
         }
         return k;
@@ -79,7 +78,8 @@ public class MCTS {
     {
         int index = -1;
         float best = -Float.MAX_VALUE;
-        float c = node.score/node.visits;
+        //TODO: find best c value
+        float c = 10f;//node.max;
         for(int i = 0;i < node.children.size();i++)
         {
             float uct = calcUct(node.children.get(i), c);
@@ -189,7 +189,7 @@ public class MCTS {
         for(int i = 0;i < node.children.size();i++)
         {
             float avg = (node.children.get(i).score)/(node.children.get(i).visits);
-            // System.out.print(node.children.get(i).visits + " ");
+            System.out.print("[" + node.children.get(i).visits + ", " + avg + "] ");
             if(node.children.get(i).visits > count)
             {
                 max = i;
