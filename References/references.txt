@@ -9,4 +9,16 @@ journal = {SIAM Journal on Computing},
 doi = {10.1137/110845045}
 }
 
+(uspr)
+@article{whidden2018calculating,
+  title={Calculating the unrooted subtree prune-and-regraft distance},
+  author={Whidden, Chris and Matsen, Frederick A},
+  journal={IEEE/ACM transactions on computational biology and bioinformatics},
+  volume={16},
+  number={3},
+  pages={898--911},
+  year={2018},
+  publisher={IEEE}
+}
+
 https://stackoverflow.com/questions/36664993/mcts-uct-with-a-scoring-system

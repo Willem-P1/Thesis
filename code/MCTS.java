@@ -15,9 +15,13 @@ public class MCTS {
         List<Node> children;
         int visits;
         float score;
+        float sqScore;
         int move;
         float max;
+        float min;
         public Node(int move){
+            min = 100000;
+            max = -1;
             children = new ArrayList<>();
             this.move = move;
         }
@@ -28,6 +32,7 @@ public class MCTS {
         this.tree = tree;
         this.forest = forest;
         Node root = new Node(-1);
+        double maxTime = 5;
         while(tree.size() > 2)
         {
             // System.out.println("Size: " + tree.size());
@@ -37,13 +42,16 @@ public class MCTS {
             List<Operation> operations = new ArrayList<>();
             System.out.println("move: " + move);
             k = to.doOp(tree, forest, move, k, operations);
+            maxTime *= 0.975;
         }
         return k;
     }
 
-    public int monte_carlo_tree_search(Node root, int startK, int t){
+    public int monte_carlo_tree_search(Node root, int startK, double t){
         long startTime = System.nanoTime();
         long endTime = startTime;
+        //starting with 24 seconds and reducing it by a factor of 0.8 will result in a total time of 120 seconds after 30 iterations
+        //TODO: figure out best formulation for this, might be that 0.5 or 0.9 is better
         while((endTime - startTime) < t * 1e9){
             List<Operation> operations = new ArrayList<>();
             k = startK;
@@ -58,6 +66,7 @@ public class MCTS {
 
             endTime = System.nanoTime();
         }
+
         return best_child(root);
     }
  
@@ -79,7 +88,7 @@ public class MCTS {
         int index = -1;
         float best = -Float.MAX_VALUE;
         //TODO: find best c value
-        float c = 10f;//node.max;
+        float c = 10f;//(node.max - node.min)/2;
         for(int i = 0;i < node.children.size();i++)
         {
             float uct = calcUct(node.children.get(i), c);
@@ -94,8 +103,12 @@ public class MCTS {
 
     public float calcUct(Node node, float c)
     {
-        float uct = -node.score/node.visits;
-        uct += defaultC * c * Math.sqrt(Math.log(node.parent.visits)/node.visits);
+        float avg = node.score/node.visits;
+        float s = node.sqScore/node.visits - (avg * avg);
+        float uct = -avg;
+        float div = (float) Math.log(node.parent.visits)/node.visits;
+        uct += defaultC * c * Math.sqrt( div * Math.min(0.25f, s + 2 * div));
+        // uct += Math.sqrt( div * Math.min(0.25f, s + 2 * div));
         return uct;
     }
 
@@ -104,11 +117,11 @@ public class MCTS {
         //If its a terminal node, backpropagate immediately since it cannot be expanded
         if(tree.size() <= 2)
         {
-            backpropagate(node, k);
+            backpropagate(node, k, -1);
             return;
         }
 
-        int[] ab = to.findCherry(tree);
+        int[] ab = to.findCherry(tree); 
         int a = ab[0];
         int b = ab[1];
         List<Integer> path = to.findPath(forest, a, b);
@@ -163,22 +176,31 @@ public class MCTS {
         Node node = new Node(move);
         parent.children.add(node);
         node.parent = parent;
-        backpropagate(node, res);
+        backpropagate(node, res, -1);
 
         to.reverseOperations(operations);
         k -= edgesToRemove.length;
     }
     // function for backpropagation
-    public void backpropagate(Node node, int result){
+    public void backpropagate(Node node, int result, float avg){
         node.visits++;
         node.score += result;
-        if(node.max < result)
+        node.sqScore += result*result;
+        if(avg == -1)
         {
-            node.max = result;
+            avg = result;
+        }
+        if(node.max < avg)
+        {
+            node.max = avg;
+        }
+        if(node.min > avg)
+        {
+            node.min = avg;
         }
         if (node.parent == null)
             return;
-        backpropagate(node.parent, result);
+        backpropagate(node.parent, result, node.score/node.visits);
     }
     // function for selecting the best child
     // node with highest number of visits
