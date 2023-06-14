@@ -54,12 +54,12 @@ public class Main {
     }
     public static void runAllMCTS()
     {
-        // String path = "kernelizing-agreement-forests-main\\code\\maindataset\\";
-        String path = "kernelizing-agreement-forests-main\\code\\largetreedataset\\";
-        String[] xNum = {"500", "1000", "1500", "2000", "2500", "3000"};//"50","100", "150","200", "250", "300", "350",
-        // String[] xNum = {"50", "150", "250", "350"};//"50","100", "150","200", "250", "300", "350",
-        // String[] tbr = {"15","35"};//,"15","20, "30","};
-        String[] tbr = {"35"};//,"15","20, "30","};
+        String path = "kernelizing-agreement-forests-main\\code\\maindataset\\";
+        // String path = "kernelizing-agreement-forests-main\\code\\largetreedataset\\";
+        // String[] xNum = {"500", "1000", "1500", "2000", "2500", "3000"};//"50","100", "150","200", "250", "300", "350",
+        String[] xNum = {"50", "150", "250", "350"};//"50","100", "150","200", "250", "300", "350",
+        String[] tbr = {"5", "10","15","20","35"};//,"15","20, "30","};
+        // String[] tbr = {"35"};//,"15","20, "30","};
         String[] skew = {"50","70","90"};
         String[] id = {"01","02","03","04", "05"};
 
@@ -137,10 +137,11 @@ public class Main {
         Parser l = new Parser(path);
         Tree[] trees  = l.parse();
         TreeOperations to = new TreeOperations();
-        to.reduce(trees[0], trees[1]);
         to.suppressDeg2Vertex(trees[0], -2);
         to.suppressDeg2Vertex(trees[1], -2);
+        to.reduce(trees[0], trees[1]);
         // System.out.println(trees[0]);
+        // System.out.println(trees[1]);
         MCTS mcts = new MCTS();
         long startTime = System.nanoTime();
         int result = mcts.mctsMain(trees[0], trees[1],0,1);
@@ -168,9 +169,9 @@ public class Main {
         Parser l = new Parser(path);
         Tree[] trees  = l.parse();
 
-        to.reduce(trees[0], trees[1]);
         to.suppressDeg2Vertex(trees[0], -2);
         to.suppressDeg2Vertex(trees[1], -2);
+        to.reduce(trees[0], trees[1]);
         if(size){
             System.out.println(trees[0].size());
             return;
@@ -204,9 +205,9 @@ public class Main {
         Parser l = new Parser(path);
         Tree[] trees  = l.parse();
         TreeOperations to = new TreeOperations();
-        to.reduce(trees[0], trees[1]);
         to.suppressDeg2Vertex(trees[0], -2);
         to.suppressDeg2Vertex(trees[1], -2);
+        to.reduce(trees[0], trees[1]);
         // System.out.println(trees[0]);
         for(int i = 0; i <= 15; i++){
             boolean result = to.MAF(trees[0], trees[1], new int[0][0], i);

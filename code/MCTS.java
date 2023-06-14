@@ -1,5 +1,6 @@
 package code;
 
+import java.security.Principal;
 import java.util.*;
 import code.TreeOperations.Operation;
 
@@ -40,7 +41,7 @@ public class MCTS {
             int move = monte_carlo_tree_search(root, k, maxT);
             root = root.children.get(move);
             List<Operation> operations = new ArrayList<>();
-            System.out.println("move: " + move);
+            // System.out.println("move: " + move);
             k = to.doOp(tree, forest, move, k, operations);
             maxTime *= 0.975;
         }
@@ -76,7 +77,7 @@ public class MCTS {
             int index = best_uct(node);
             // System.out.println("Problem here? " + node.children.size());
             node = node.children.get(index);
-            // System.out.println("node: " + node.move);
+            // System.out.println("node: " + node.move + ", index: " + index);
             k = to.doOp(tree, forest, index, k, operations);
         }
         // in case no children are present / node is terminal
@@ -91,24 +92,29 @@ public class MCTS {
         float c = 10f;//(node.max - node.min)/2;
         for(int i = 0;i < node.children.size();i++)
         {
-            float uct = calcUct(node.children.get(i), c);
+            float uct = 0;
+            uct = calcUct(node.children.get(i), c);
+            // System.out.print("?uct");
             if(uct > best)
             {
                 index = i;
                 best = uct;
             }
         }
+        if(index == -1){System.out.println(best);}
         return index;
     }
 
     public float calcUct(Node node, float c)
     {
         float avg = node.score/node.visits;
-        float s = node.sqScore/node.visits - (avg * avg);
+        // float s = node.sqScore/node.visits - (avg * avg);
         float uct = -avg;
         float div = (float) Math.log(node.parent.visits)/node.visits;
-        uct += defaultC * c * Math.sqrt( div * Math.min(0.25f, s + 2 * div));
+        uct += defaultC * c * Math.sqrt(div);// * Math.min(0.25f, s + 2 * div));
         // uct += Math.sqrt( div * Math.min(0.25f, s + 2 * div));
+        // System.out.println(uct);
+
         return uct;
     }
 
@@ -211,7 +217,7 @@ public class MCTS {
         for(int i = 0;i < node.children.size();i++)
         {
             float avg = (node.children.get(i).score)/(node.children.get(i).visits);
-            System.out.print("[" + node.children.get(i).visits + ", " + avg + "] ");
+            // System.out.print("[" + node.children.get(i).visits + ", " + avg + "] ");
             if(node.children.get(i).visits > count)
             {
                 max = i;

@@ -582,6 +582,7 @@ public class TreeOperations {
 
             for(int i = 0; i < pendant.size();i++)
             {
+                // System.out.println(moveNum == move);
                 if(moveNum != move){moveNum++; continue;}
                 int[][] edges = new int[pendant.size()-1][2];
                 int index = 0;
