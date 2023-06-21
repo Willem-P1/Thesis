@@ -13,8 +13,9 @@ public class Main {
         boolean useRandom = false;
         boolean useMCTS = false;
         int n = 20;//default n value
-        for(String s : args)
+        for(int i = 0;i < args.length;i++)
         {
+            String s = args[i];
             if(s.equals("-d")){DEBUG = true;}
             else if(s.equals("-r")){useRandom = true;}
             else if(s.equals("-a")){testAll = true;}
