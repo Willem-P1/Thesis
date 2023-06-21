@@ -12,44 +12,57 @@ public class Main {
         boolean testAll = false;
         boolean useRandom = false;
         boolean useMCTS = false;
-        int n = 20;//default n value
+        boolean useNaive = false;
+        String path = "";
+        double time = 1;
         for(int i = 0;i < args.length;i++)
         {
             String s = args[i];
-            if(s.equals("-d")){DEBUG = true;}
+            if(s.equals("-p")){i++;path = args[i];}
+            if(s.equals("-t")){i++;time = Double.parseDouble(args[i]);}
             else if(s.equals("-r")){useRandom = true;}
-            else if(s.equals("-a")){testAll = true;}
+            else if(s.equals("-n")){useNaive = true;}
             else if(s.equals("-mcts")){useMCTS = true;}
         }
-        if(DEBUG){
-            if(useRandom){runOneRandom("code/test.txt",n);}
-            else if(useMCTS){runOneMCTS("code/test.txt");}
-            else{runOne("code/test.txt");}
-        }else{
-            if(useRandom){
-                if(testAll){
-                    runAllRandom(n);
-                }else{
-                    runOneRandom(args[0],n);
-                }
-            }else if(useMCTS)
-            {
-                if(testAll){
-                    runAllMCTS();
-                }else{
-                    runOneMCTS(args[0]);
-                }
-            }else
-            {
-                if(testAll){
-                    runAll();
-                }else{
-                    runOne(args[0]);
-                }
-            }           
-        }
 
-        System.out.println(a + ", " + b + ", " + c);
+        if(path.equals("")){
+            System.out.println("Error no file selected!");
+            return;
+        }
+        
+        if(useMCTS){runOneMCTS(path, time);}
+        else if(useRandom){runOneRandom(path,time);}
+        else if(useNaive){runOneNaive(path, time);}
+        else{System.out.println("Error no algorithm selected!");}
+        // if(DEBUG){
+        //     if(useRandom){runOneRandom("code/test.txt",n);}
+        //     else if(useMCTS){runOneMCTS("code/test.txt");}
+        //     else{runOne("code/test.txt");}
+        // }else{
+        //     if(useRandom){
+        //         if(testAll){
+        //             runAllRandom(n);
+        //         }else{
+        //             runOneRandom(args[0],n);
+        //         }
+        //     }else if(useMCTS)
+        //     {
+        //         if(testAll){
+        //             runAllMCTS();
+        //         }else{
+        //             runOneMCTS(args[0]);
+        //         }
+        //     }else
+        //     {
+        //         if(testAll){
+        //             runAll();
+        //         }else{
+        //             runOne(args[0]);
+        //         }
+        //     }           
+        // }
+
+        // System.out.println(a + ", " + b + ", " + c);
         // System.out.println("after MAF");
         // System.out.println(trees[0]);
     }
@@ -75,7 +88,7 @@ public class Main {
                         List<String> list = Arrays.asList("TREEPAIR",x,t,s,i);
                         String name = String.join("_", list);
                         System.out.print(name + ", ");
-                        runOneMCTS(path + name + ".tree");
+                        runOneMCTS(path + name + ".tree", 1);
                     }
                 }
             }
@@ -133,7 +146,7 @@ public class Main {
         }
     }
 
-    public static void runOneMCTS(String path)
+    public static void runOneNaive(String path, double t)
     {
         Parser l = new Parser(path);
         Tree[] trees  = l.parse();
@@ -145,7 +158,7 @@ public class Main {
         // System.out.println(trees[1]);
         MCTS mcts = new MCTS();
         long startTime = System.nanoTime();
-        int result = mcts.mctsMain(trees[0], trees[1],0,1);
+        int result = mcts.mctsMain(trees[0], trees[1],0,t);
         // int result = to.MCTSTBR(trees[0], trees[1], new int[0][0], 0,0.5e9);
         long endTime = System.nanoTime();
         double time = endTime - startTime;
@@ -153,7 +166,27 @@ public class Main {
         System.out.println("k=" + result + ", t=" + time);
     }
 
-    public static void runOneRandom(String path, int n)
+    public static void runOneMCTS(String path, double t)
+    {
+        Parser l = new Parser(path);
+        Tree[] trees  = l.parse();
+        TreeOperations to = new TreeOperations();
+        to.suppressDeg2Vertex(trees[0], -2);
+        to.suppressDeg2Vertex(trees[1], -2);
+        to.reduce(trees[0], trees[1]);
+        // System.out.println(trees[0]);
+        // System.out.println(trees[1]);
+        MCTS mcts = new MCTS();
+        long startTime = System.nanoTime();
+        // int result = mcts.mctsMain(trees[0], trees[1],0,t);
+        int result = to.MCTSTBR(trees[0], trees[1], new int[0][0], 0,t);
+        long endTime = System.nanoTime();
+        double time = endTime - startTime;
+        time /= 1e9;
+        System.out.println("k=" + result + ", t=" + time);
+    }
+
+    public static void runOneRandom(String path, double t)
     {
         boolean size = false;
         TreeOperations to = new TreeOperations();
@@ -179,7 +212,7 @@ public class Main {
         }
         
         // for(int i =0; i < n; i++)
-        while(endTime - startTime < 60e9)
+        while(endTime - startTime < t * 1e9)
         {
             long startTime2 = System.nanoTime();
 

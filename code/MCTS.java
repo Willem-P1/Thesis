@@ -28,7 +28,7 @@ public class MCTS {
         }
     }
 
-    public int mctsMain(Tree tree, Tree forest, int k, int maxT)
+    public int mctsMain(Tree tree, Tree forest, int k, double maxT)
     {
         this.tree = tree;
         this.forest = forest;
