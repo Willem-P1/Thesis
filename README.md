@@ -1,7 +1,7 @@
 # Thesis
 Repo for thesis, making upper bound heuristic for calculating TBR distance
 
-#How to use
+# How to use
 To use the code compile the java files in the "code" folder using "javac code/*.java". Then to run the code, use "java code.Main" with some command line arguments: <br>
  - use "-p [path]"to pass the file with the trees to run the algorithms on. NOTE: the code expects the trees in the newick format with one line per tree in the file.<br>
  - use "-t [time]" to pass the timelimit, what this timelimit means depends on which algorithm is used <br>
