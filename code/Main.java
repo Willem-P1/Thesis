@@ -13,6 +13,7 @@ public class Main {
         boolean useRandom = false;
         boolean useMCTS = false;
         boolean useNaive = false;
+        boolean remDeg2 = false;
         String path = "";
         double time = 1;
         for(int i = 0;i < args.length;i++)
@@ -23,16 +24,17 @@ public class Main {
             else if(s.equals("-r")){useRandom = true;}
             else if(s.equals("-n")){useNaive = true;}
             else if(s.equals("-mcts")){useMCTS = true;}
+            else if(s.equals("-deg2")){remDeg2 = true;}
         }
 
         if(path.equals("")){
             System.out.println("Error no file selected!");
             return;
         }
-        
-        if(useMCTS){runOneMCTS(path, time);}
-        else if(useRandom){runOneRandom(path,time);}
-        else if(useNaive){runOneNaive(path, time);}
+        // System.out.println(time);
+        if(useMCTS){runOneMCTS(path, time, remDeg2);}
+        else if(useRandom){runOneRandom(path,time, remDeg2);}
+        else if(useNaive){runOneNaive(path, time, remDeg2);}
         else{System.out.println("Error no algorithm selected!");}
         // if(DEBUG){
         //     if(useRandom){runOneRandom("code/test.txt",n);}
@@ -88,7 +90,7 @@ public class Main {
                         List<String> list = Arrays.asList("TREEPAIR",x,t,s,i);
                         String name = String.join("_", list);
                         System.out.print(name + ", ");
-                        runOneMCTS(path + name + ".tree", 1);
+                        runOneMCTS(path + name + ".tree", 1, true);
                     }
                 }
             }
@@ -114,7 +116,7 @@ public class Main {
                         List<String> list = Arrays.asList("TREEPAIR",x,t,s,i);
                         String name = String.join("_", list);
                         System.out.print(name + ", ");
-                        runOneRandom(path + name + ".tree", n);
+                        runOneRandom(path + name + ".tree", n, true);
                     }
                 }
             }
@@ -146,47 +148,51 @@ public class Main {
         }
     }
 
-    public static void runOneNaive(String path, double t)
+    public static void runOneNaive(String path, double t, boolean remDeg2)
     {
         Parser l = new Parser(path);
         Tree[] trees  = l.parse();
         TreeOperations to = new TreeOperations();
-        to.suppressDeg2Vertex(trees[0], -2);
-        to.suppressDeg2Vertex(trees[1], -2);
-        to.reduce(trees[0], trees[1]);
-        // System.out.println(trees[0]);
-        // System.out.println(trees[1]);
-        MCTS mcts = new MCTS();
-        long startTime = System.nanoTime();
-        int result = mcts.mctsMain(trees[0], trees[1],0,t);
-        // int result = to.MCTSTBR(trees[0], trees[1], new int[0][0], 0,0.5e9);
-        long endTime = System.nanoTime();
-        double time = endTime - startTime;
-        time /= 1e9;
-        System.out.println("k=" + result + ", t=" + time);
-    }
-
-    public static void runOneMCTS(String path, double t)
-    {
-        Parser l = new Parser(path);
-        Tree[] trees  = l.parse();
-        TreeOperations to = new TreeOperations();
-        to.suppressDeg2Vertex(trees[0], -2);
-        to.suppressDeg2Vertex(trees[1], -2);
+        if(remDeg2){
+            to.suppressDeg2Vertex(trees[0], -2);
+            to.suppressDeg2Vertex(trees[1], -2);
+        }
         to.reduce(trees[0], trees[1]);
         // System.out.println(trees[0]);
         // System.out.println(trees[1]);
         MCTS mcts = new MCTS();
         long startTime = System.nanoTime();
         // int result = mcts.mctsMain(trees[0], trees[1],0,t);
-        int result = to.MCTSTBR(trees[0], trees[1], new int[0][0], 0,t);
+        int result = to.MCTSTBR(trees[0], trees[1], new int[0][0], 0,t * 1e9);
         long endTime = System.nanoTime();
         double time = endTime - startTime;
         time /= 1e9;
         System.out.println("k=" + result + ", t=" + time);
     }
 
-    public static void runOneRandom(String path, double t)
+    public static void runOneMCTS(String path, double t, boolean remDeg2)
+    {
+        Parser l = new Parser(path);
+        Tree[] trees  = l.parse();
+        TreeOperations to = new TreeOperations();
+        if(remDeg2){
+            to.suppressDeg2Vertex(trees[0], -2);
+            to.suppressDeg2Vertex(trees[1], -2);
+        }
+        to.reduce(trees[0], trees[1]);
+        // System.out.println(trees[0]);
+        // System.out.println(trees[1]);
+        MCTS mcts = new MCTS();
+        long startTime = System.nanoTime();
+        int result = mcts.mctsMain(trees[0], trees[1],0,t);
+        // int result = to.MCTSTBR(trees[0], trees[1], new int[0][0], 0,t);
+        long endTime = System.nanoTime();
+        double time = endTime - startTime;
+        time /= 1e9;
+        System.out.println("k=" + result + ", t=" + time);
+    }
+
+    public static void runOneRandom(String path, double time, boolean remDeg2)
     {
         boolean size = false;
         TreeOperations to = new TreeOperations();
@@ -203,16 +209,19 @@ public class Main {
         Parser l = new Parser(path);
         Tree[] trees  = l.parse();
 
-        to.suppressDeg2Vertex(trees[0], -2);
-        to.suppressDeg2Vertex(trees[1], -2);
+        if(remDeg2){
+            to.suppressDeg2Vertex(trees[0], -2);
+            to.suppressDeg2Vertex(trees[1], -2);
+        }
         to.reduce(trees[0], trees[1]);
         if(size){
             System.out.println(trees[0].size());
+            System.out.println(t);
             return;
         }
         
         // for(int i =0; i < n; i++)
-        while(endTime - startTime < t * 1e9)
+        while(endTime - startTime < time * 1e9)
         {
             long startTime2 = System.nanoTime();
 
@@ -232,7 +241,7 @@ public class Main {
             
             endTime =  System.nanoTime();
         }
-        System.out.println("k=" + min + ", count=" + count + ", t=" + t + ", t2=" + t2);
+        System.out.println("k=" + min + ", count=" + count);
     }
     public static void runOne(String path)
     {
