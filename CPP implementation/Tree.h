@@ -49,4 +49,17 @@ class Tree
         addEdge(from, label);
         addEdge(label, to);
     }
+
+    void printTree()
+    {
+        for(map<int, vector<int>>::iterator iter = graph.begin(); iter != graph.end();iter++)
+        {
+            int key = iter->first;
+            vector<int> v = iter->second;
+            for(int i = 0; i < v.size();i++)
+            {
+                cout << key << " - " << v[i] << endl;
+            }
+        }
+    }
 };
